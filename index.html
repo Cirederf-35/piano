@@ -454,8 +454,11 @@
     .n-exercices-empty { font-size:0.8em; color:var(--text-muted); font-style:italic; padding:8px 2px; }
     .ex-card { background: rgba(255,255,255,0.02); border:1px solid var(--input-border); border-radius:10px; padding:10px 12px; }
     .ex-card.unlocked { background: var(--input-bg); border-color: rgba(79,124,255,0.5); box-shadow:0 0 0 3px rgba(79,124,255,0.12); }
-    .ex-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+    .ex-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; gap:8px; flex-wrap:wrap; }
+    .ex-card-head-left { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .ex-label { font-size:0.7em; font-weight:700; color:var(--accent3); text-transform:uppercase; letter-spacing:.5px; }
+    .ex-niveau-badge { font-size:0.66em; font-weight:700; padding:2px 9px; border-radius:20px; cursor:pointer; user-select:none; white-space:nowrap; }
+    .ex-niveau-badge:hover { filter:brightness(1.15); }
     .ex-actions { display:flex; align-items:center; gap:2px; }
     .ex-icon-btn { background:none; border:none; cursor:pointer; font-size:0.95em; padding:2px 4px; border-radius:6px; opacity:.75; }
     .ex-icon-btn:hover { opacity:1; background: rgba(0,0,0,0.05); }
@@ -967,10 +970,14 @@
   notions.forEach(n => {
     if (!Array.isArray(n.exercicesList)) {
       n.exercicesList = (n.exercices && n.exercices.trim())
-        ? [{ id: uid('ex'), texte: n.exercices, video: '' }]
+        ? [{ id: uid('ex'), texte: n.exercices, video: '', niveau: 'a-demarrer' }]
         : [];
       migrationNeeded = true;
     }
+    // Migration : niveau de maîtrise par exercice (badge à tap), absent sur les exercices déjà créés
+    n.exercicesList.forEach(ex => {
+      if (!ex.niveau) { ex.niveau = 'a-demarrer'; migrationNeeded = true; }
+    });
   });
   if (migrationNeeded) saveToStorage();
 
@@ -1039,9 +1046,10 @@
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    const now  = new Date();
-    const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-    a.href = url; a.download = `mon-suivi-piano-${date}.json`; a.click();
+    const now = new Date();
+    const pad = v => String(v).padStart(2,'0');
+    const stamp = `${pad(now.getFullYear()%100)}${pad(now.getMonth()+1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}`;
+    a.href = url; a.download = `${stamp}_save_piano.json`; a.click();
     URL.revokeObjectURL(url);
     showToast(`✓ Export terminé (${modules.length} morceau(x), ${notions.length} notion(s))`, 'success');
   }
@@ -1487,6 +1495,21 @@
     return map[val] || map['a-decouvrir'];
   }
 
+  // Niveau de maîtrise par exercice — badge à tap successif (cycle les 3 états)
+  const NIVEAU_CYCLE = ['a-demarrer', 'a-travailler', 'acquis'];
+  function niveauInfo(val) {
+    const map = {
+      'a-demarrer':   { cls: 'st-a-decouvrir', label: '🔵 À démarrer' },
+      'a-travailler': { cls: 'st-en-cours',    label: '🟣 À travailler' },
+      'acquis':       { cls: 'st-acquis',      label: '✅ Acquis' }
+    };
+    return map[val] || map['a-demarrer'];
+  }
+  function nextNiveau(val) {
+    const i = NIVEAU_CYCLE.indexOf(val);
+    return NIVEAU_CYCLE[(i + 1) % NIVEAU_CYCLE.length];
+  }
+
   function renderCoursDetail(formationId, searchTerm) {
     const formation = formations.find(f => f.id === formationId);
     if (!formation) return;
@@ -1543,10 +1566,14 @@
   // Une carte "exercice" indépendante (texte + lien vidéo optionnel + cadenas propre)
   function exerciseCardHtml(ex, idx) {
     const hasVideo = ex.video && ex.video.trim();
+    const niv = niveauInfo(ex.niveau);
     return `
       <div class="ex-card" data-ex-id="${ex.id}">
         <div class="ex-card-head">
-          <span class="ex-label">Exercice ${idx + 1}</span>
+          <div class="ex-card-head-left">
+            <span class="ex-label">Exercice ${idx + 1}</span>
+            <span class="ex-niveau-badge ${niv.cls}" data-action="niveau" title="Cliquer pour changer le niveau">${niv.label}</span>
+          </div>
           <div class="ex-actions">
             <button class="ex-icon-btn ${hasVideo ? 'video-active' : ''}" data-action="video" ${hasVideo ? '' : 'disabled'} title="${hasVideo ? 'Voir la vidéo' : 'Aucune vidéo liée'}">🎬</button>
             <button class="ex-icon-btn" data-action="lock" title="Verrouiller / déverrouiller">🔒</button>
@@ -1574,6 +1601,20 @@
       e.stopPropagation();
       const ex = getEx();
       if (ex && ex.video && ex.video.trim()) openVideoModal(ex.video.trim());
+    });
+
+    // Niveau de maîtrise : tap pour passer à l'état suivant (indépendant du cadenas)
+    cardEl.querySelector('[data-action="niveau"]').addEventListener('click', e => {
+      e.stopPropagation();
+      const ex = getEx();
+      if (!ex) return;
+      ex.niveau = nextNiveau(ex.niveau || 'a-demarrer');
+      n.lastUpdate = new Date().toISOString();
+      saveToStorage();
+      const info = niveauInfo(ex.niveau);
+      const badge = e.currentTarget;
+      badge.textContent = info.label;
+      badge.className = 'ex-niveau-badge ' + info.cls;
     });
 
     cardEl.querySelector('[data-action="lock"]').addEventListener('click', e => {
@@ -1808,7 +1849,7 @@
     el.querySelector('[data-action="add-exercise"]').addEventListener('click', e => {
       e.stopPropagation();
       if (!Array.isArray(n.exercicesList)) n.exercicesList = [];
-      const ex = { id: uid('ex'), texte: '', video: '' };
+      const ex = { id: uid('ex'), texte: '', video: '', niveau: 'a-demarrer' };
       n.exercicesList.push(ex);
       n.lastUpdate = new Date().toISOString();
       const empty = exCol.querySelector('.n-exercices-empty');
