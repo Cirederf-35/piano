@@ -3,11 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mes Morceaux</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#16213e">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Mon suivi piano</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root[data-theme="dark"] {
@@ -28,6 +24,9 @@
       --toggle-bg: rgba(255,255,255,0.1);
       --row-hover: rgba(255,255,255,0.04);
       --row-alt: rgba(255,255,255,0.02);
+      --accent1: #4f7cff;
+      --accent2: #22c1c3;
+      --accent3: #7c9cff;
     }
     :root[data-theme="light"] {
       --bg: linear-gradient(135deg, #e8eaf6 0%, #e3f2fd 50%, #e0f7fa 100%);
@@ -47,6 +46,9 @@
       --toggle-bg: rgba(0,0,0,0.08);
       --row-hover: rgba(0,0,0,0.03);
       --row-alt: rgba(0,0,0,0.015);
+      --accent1: #4f6fdb;
+      --accent2: #1aa3a5;
+      --accent3: #4f6fdb;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -56,8 +58,10 @@
       padding: 0 0 60px;
       transition: background 0.4s;
     }
+    .view { display: none; }
+    .view.active { display: block; }
 
-    /* HEADER */
+    /* ============ HEADER (Morceaux) ============ */
     .page-header {
       width: 100%;
       background: var(--card-bg);
@@ -100,6 +104,11 @@
       padding: 3px 10px;
       border-radius: 20px;
     }
+    .header-back {
+      position: absolute;
+      left: 0; top: 50%;
+      transform: translateY(-50%);
+    }
     .header-actions {
       position: absolute;
       right: 0; top: 50%;
@@ -125,43 +134,8 @@
     .btn-add { background: linear-gradient(135deg, #6c63ff, #48cfad); color: #fff; box-shadow: 0 4px 14px rgba(108,99,255,0.35); }
     .btn-add:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,99,255,0.45); }
     #importInput { display: none; }
-    .sort-select {
-      appearance: none; -webkit-appearance: none;
-      background: var(--toggle-bg); border: 1px solid var(--card-border);
-      color: var(--text-primary); font-family: 'Inter', sans-serif;
-      font-size: 0.8em; font-weight: 600; padding: 7px 28px 7px 13px;
-      border-radius: 50px; cursor: pointer; transition: all 0.3s;
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-      background-repeat: no-repeat; background-position: right 10px center;
-    }
-    .sort-select:hover { border-color: var(--card-border-hover); }
-    .sort-select option { background: #1a1a2e; color: #fff; }
-    .practice-btn {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 0.72em; font-weight: 600; color: #48cfad;
-      background: rgba(72,207,173,0.12); border: 1px solid rgba(72,207,173,0.3);
-      padding: 3px 9px; border-radius: 20px; cursor: pointer;
-      font-family: 'Inter', sans-serif; transition: all 0.25s;
-    }
-    .practice-btn:hover { background: rgba(72,207,173,0.25); transform: translateY(-1px); }
-    .practice-btn.done-today { color: var(--text-muted); background: var(--input-bg); border-color: var(--card-border); cursor: default; }
-    .practice-btn.done-today:hover { transform: none; }
-    .sessions-block { margin-bottom: 12px; }
-    .sessions-list { display: flex; flex-direction: column; gap: 4px; }
-    .session-item { font-size: 0.78em; color: var(--text-muted); display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: var(--input-bg); border-radius: 8px; }
-    .session-item svg { width: 10px; height: 10px; stroke: #48cfad; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-    .drag-handle.drag-off { opacity: 0.25; cursor: not-allowed; }
-    .btn-export { position: relative; }
-    .export-alert {
-      position: absolute; top: -4px; right: -4px;
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #fc5c65; border: 2px solid #16213e;
-      box-shadow: 0 0 8px rgba(252,92,101,0.7);
-      animation: exportPulse 2s ease-in-out infinite;
-    }
-    @keyframes exportPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.25); } }
 
-    /* SYNTHÈSE / FILTRES */
+    /* SYNTHÈSE / FILTRES (Morceaux) */
     .summary-row {
       display: flex;
       align-items: stretch;
@@ -169,19 +143,6 @@
       gap: 8px;
       flex-wrap: wrap;
     }
-    .summary-sep { width: 1px; background: var(--divider); flex-shrink: 0; align-self: stretch; }
-    .pill-cours {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.3);
-      border-radius: 14px; padding: 10px 16px; min-width: 90px;
-      cursor: pointer; user-select: none; transition: all 0.25s; gap: 2px; order: -1;
-    }
-    .pill-cours:hover { background: rgba(108,99,255,0.18); border-color: rgba(108,99,255,0.55); transform: translateY(-2px); box-shadow: 0 4px 16px var(--shadow); }
-    .pill-cours.active { background: rgba(108,99,255,0.2); border-color: #6c63ff; box-shadow: 0 0 0 2px rgba(108,99,255,0.3); transform: translateY(-2px); }
-    .pill-cours .pill-icon { font-size: 1.3em; line-height: 1; }
-    .pill-cours .pill-label { font-size: 0.67em; font-weight: 700; color: #6c63ff; text-transform: uppercase; letter-spacing: 0.4px; }
-    .pill-cours .pill-sub { font-size: 0.62em; color: var(--text-muted); font-weight: 500; }
-    .sep-cours { width: 1px; background: var(--divider); flex-shrink: 0; align-self: stretch; order: -1; }
     .stat-pill {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       background: var(--input-bg); border: 1px solid var(--card-border);
@@ -214,83 +175,6 @@
     .val-purple { color: #6c63ff; }
     .val-violet { color: #a78bfa; }
 
-    /* PANNEAU COURS */
-    .cours-panel {
-      width: 100%; max-height: 0; overflow: hidden;
-      transition: max-height 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
-      opacity: 0; background: var(--card-bg);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--card-border);
-    }
-    .cours-panel.open { max-height: 2000px; opacity: 1; }
-    .cours-panel-inner { padding: 28px 32px 32px; }
-    .cours-stats-row { max-width: 960px; margin: 0 auto 24px; display: flex; gap: 12px; flex-wrap: wrap; }
-    .cours-stat-card { background: var(--input-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 20px; display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 120px; }
-    .cours-stat-card .s-val { font-size: 1.5em; font-weight: 700; color: var(--text-primary); line-height: 1; }
-    .cours-stat-card .s-lbl { font-size: 0.72em; color: var(--text-secondary); font-weight: 500; }
-    .cours-stat-card.purple .s-val { color: #6c63ff; }
-    .cours-stat-card.green  .s-val { color: #48cfad; }
-    .cours-stat-card.orange .s-val { color: #f7971e; }
-    .cours-stat-card.red    .s-val { color: #fc5c65; }
-
-    /* CARTE NOTION */
-    .notion-card { max-width: 960px; margin: 0 auto; background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 24px; overflow: hidden; box-shadow: 0 8px 40px var(--shadow); position: relative; }
-    .notion-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #6c63ff, #48cfad, #f7971e); }
-    .notion-header { padding: 22px 28px 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--divider); flex-wrap: wrap; }
-    .notion-header-left { display: flex; flex-direction: column; gap: 6px; }
-    .notion-name { font-size: 1.2em; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
-    .notion-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .tag { font-size: 0.72em; font-weight: 600; padding: 3px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; }
-    .tag-theory { background: rgba(108,99,255,0.12); color: #6c63ff; border: 1px solid rgba(108,99,255,0.25); }
-    .tag-scales { background: rgba(72,207,173,0.12); color: #48cfad; border: 1px solid rgba(72,207,173,0.25); }
-    .tag-improv { background: rgba(247,151,30,0.12); color: #f7971e; border: 1px solid rgba(247,151,30,0.25); }
-    .notion-meta { font-size: 0.75em; color: var(--text-muted); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .notion-meta span { display: flex; align-items: center; gap: 4px; }
-    .notion-meta svg { width: 11px; height: 11px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .notion-intro { padding: 18px 28px; font-size: 0.88em; color: var(--text-secondary); line-height: 1.7; border-bottom: 1px solid var(--divider); background: var(--row-alt); }
-    .notion-intro strong { color: var(--text-primary); }
-    .legend-row { padding: 14px 28px; display: flex; align-items: center; gap: 20px; border-bottom: 1px solid var(--divider); flex-wrap: wrap; }
-    .legend-title { font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
-    .legend-items { display: flex; gap: 12px; flex-wrap: wrap; }
-    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.78em; color: var(--text-secondary); }
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .table-wrapper { overflow-x: auto; padding: 0 0 4px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
-    thead tr { background: var(--input-bg); }
-    thead th { padding: 12px 16px; text-align: left; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-secondary); white-space: nowrap; border-bottom: 1px solid var(--divider); }
-    thead th:first-child { padding-left: 28px; }
-    thead th:last-child  { padding-right: 28px; }
-    tbody tr { border-bottom: 1px solid var(--divider); transition: background 0.15s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:nth-child(even) { background: var(--row-alt); }
-    tbody tr:hover { background: var(--row-hover); }
-    td { padding: 11px 16px; color: var(--text-primary); vertical-align: middle; }
-    td:first-child { padding-left: 28px; }
-    td:last-child  { padding-right: 28px; }
-    .row-num { font-size: 0.75em; color: var(--text-muted); font-weight: 600; width: 28px; text-align: center; }
-    .scale-major { font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-    .scale-major .note-name { font-size: 1.05em; }
-    .scale-minor { color: var(--text-secondary); font-weight: 500; display: flex; align-items: center; gap: 6px; }
-    .accidental-cell { display: flex; align-items: center; gap: 8px; }
-    .accidental-count { font-weight: 700; font-size: 1em; min-width: 20px; text-align: center; }
-    .accidental-dots { display: flex; gap: 3px; flex-wrap: wrap; max-width: 120px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .sharp-color { color: #f7971e; }
-    .flat-color  { color: #6c63ff; }
-    .neutral     { color: var(--text-muted); }
-    .dot-sharp { background: #f7971e; }
-    .dot-flat  { background: #6c63ff; }
-    .armure-cell { font-size: 0.82em; color: var(--text-secondary); font-style: italic; max-width: 200px; line-height: 1.4; }
-    .armure-symbol { font-size: 1.1em; font-style: normal; font-weight: 600; }
-    .badge-neutral { display: inline-flex; align-items: center; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; padding: 2px 8px; font-size: 0.8em; color: var(--text-muted); font-style: normal; }
-    tr.highlight-row td { background: rgba(108,99,255,0.06); }
-    tr.highlight-row:hover td { background: rgba(108,99,255,0.1); }
-    .notion-footer { padding: 16px 28px; border-top: 1px solid var(--divider); background: var(--row-alt); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-    .footer-note { font-size: 0.78em; color: var(--text-muted); display: flex; align-items: flex-start; gap: 6px; line-height: 1.5; max-width: 600px; }
-    .footer-note strong { color: var(--text-secondary); }
-    .footer-date { font-size: 0.75em; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
-    .footer-date svg { width: 11px; height: 11px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
     /* BANDEAU FILTRE */
     .filter-banner { width: 100%; padding: 10px 32px; background: var(--input-bg); border-bottom: 1px solid var(--card-border); display: none; align-items: center; justify-content: space-between; gap: 12px; }
     .filter-banner.visible { display: flex; }
@@ -304,7 +188,7 @@
     .filter-clear { font-size: 0.8em; color: var(--text-muted); cursor: pointer; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--card-border); background: none; font-family: 'Inter', sans-serif; transition: all 0.2s; }
     .filter-clear:hover { color: var(--text-primary); border-color: var(--card-border-hover); }
 
-    /* GRILLE */
+    /* GRILLE MORCEAUX */
     .main-content { padding: 28px 24px 0; }
     #capsuleList { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; align-items: start; }
     @media (max-width: 1200px) { #capsuleList { grid-template-columns: repeat(4, 1fr); } }
@@ -312,9 +196,9 @@
     @media (max-width: 680px)  {
       #capsuleList { grid-template-columns: repeat(2, 1fr); }
       .header-actions { position: static; transform: none; margin-top: 10px; justify-content: center; }
+      .header-back { position: static; transform: none; margin-bottom: 10px; display:flex; justify-content:center; }
       .header-row1 { flex-direction: column; gap: 10px; }
       .filter-banner { padding: 10px 16px; }
-      .cours-panel-inner { padding: 20px 16px 24px; }
     }
     @media (max-width: 420px) { #capsuleList { grid-template-columns: 1fr; } }
     .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted); }
@@ -322,7 +206,7 @@
     .empty-state .empty-title { font-size: 1.1em; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
     .empty-state .empty-sub   { font-size: 0.85em; }
 
-    /* CAPSULE */
+    /* CAPSULE MORCEAU */
     .capsule {
       background: var(--card-bg);
       backdrop-filter: blur(20px);
@@ -341,9 +225,6 @@
     .capsule.dragging  { opacity: 0.35; box-shadow: none; }
     .capsule.drag-over { border-color: rgba(108,99,255,0.7); box-shadow: 0 0 0 2px rgba(108,99,255,0.35); }
 
-    /* ==============================
-       INDICATEUR DE FRAÎCHEUR
-    ============================== */
     .capsule.fresh        { background: var(--card-bg); }
     .capsule.aging-blue   { background: rgba(100,180,255,0.07); border-color: rgba(100,180,255,0.2); }
     .capsule.aging-blue:hover { border-color: rgba(100,180,255,0.4); }
@@ -435,95 +316,308 @@
     .toast-success { background: rgba(72,207,173,0.15);  border: 1px solid rgba(72,207,173,0.4);  color: #48cfad; }
     .toast-error   { background: rgba(252,92,101,0.15);  border: 1px solid rgba(252,92,101,0.4);  color: #fc5c65; }
     .toast-info    { background: rgba(247,151,30,0.15);  border: 1px solid rgba(247,151,30,0.4);  color: #f7971e; }
+
+    /* ============ ACCUEIL (3 pavés) ============ */
+    #view-home { padding: 60px 24px; }
+    .home-title { text-align: center; font-size: 1.5em; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .home-sub { text-align: center; font-size: 0.85em; color: var(--text-muted); margin-bottom: 40px; }
+    .home-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    @media (max-width: 800px){ .home-grid{ grid-template-columns:1fr; } }
+    .home-tile { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 24px; padding: 32px 24px; text-align: center; cursor: pointer; transition: all .25s; position: relative; overflow: hidden; }
+    .home-tile:hover { transform: translateY(-4px); box-shadow: 0 16px 40px var(--shadow); border-color: var(--card-border-hover); }
+    .home-tile::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; }
+    .ht-morceaux::before { background: linear-gradient(90deg, #6c63ff, #48cfad); }
+    .ht-generalites::before, .ht-cours::before { background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+    .home-tile .icon { font-size: 2.4em; margin-bottom: 12px; }
+    .home-tile .title { font-size: 1.1em; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .home-tile .stat { font-size: 0.8em; color: var(--text-muted); }
+
+    /* ============ CHROME PARTAGÉ (Généralités / Cours) ============ */
+    .top-bar { padding: 20px 32px; display: flex; align-items: center; gap: 14px; background: var(--card-bg); backdrop-filter: blur(24px); border-bottom: 1px solid var(--card-border); position: relative; overflow: hidden; }
+    .top-bar::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+    .back-btn { background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-primary); border-radius: 50px; padding: 7px 14px; font-size: 0.8em; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; }
+    .back-btn:hover { border-color: var(--card-border-hover); }
+    .top-bar-title { font-size: 1.05em; font-weight: 700; color: var(--text-primary); }
+    .top-bar-sub { font-size: 0.75em; color: var(--text-muted); margin-top: 2px; }
+    .top-bar-actions { margin-left: auto; display: flex; gap: 8px; flex-shrink: 0; }
+    .home-actions { display: flex; justify-content: center; gap: 10px; margin-bottom: 32px; flex-wrap: wrap; }
+    .gc-main { max-width: 1400px; margin: 0 auto; padding: 24px 24px 0; }
+
+    /* ============ GÉNÉRALITÉS ============ */
+    .gen-hint { max-width: 1400px; margin: 20px auto 16px; padding: 0 24px; font-size: 0.78em; color: var(--text-muted); }
+    .gen-list { display: flex; flex-direction: column; gap: 20px; max-width: 1400px; margin: 0 auto 20px; padding: 0 24px; }
+
+    /* ============ COURS - LISTE FORMATIONS ============ */
+    .cours-tiles { display: flex; flex-direction: column; gap: 14px; max-width: 800px; margin: 24px auto; padding: 0 24px; }
+    .formation-tile { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; padding: 20px 22px; cursor: pointer; display: flex; align-items: center; gap: 16px; transition: all .2s; }
+    .formation-tile:hover { border-color: var(--card-border-hover); transform: translateY(-2px); box-shadow: 0 10px 30px var(--shadow); }
+    .formation-tile .f-icon { font-size: 1.8em; }
+    .formation-tile .f-title { font-weight: 700; font-size: 1em; color: var(--text-primary); }
+    .formation-tile .f-sub { font-size: 0.78em; color: var(--text-muted); margin-top: 2px; }
+    .formation-tile.ghost { opacity: .6; border-style: dashed; justify-content: center; color: var(--text-secondary); font-weight: 600; font-size: 0.9em; }
+    .formation-tile.ghost:hover { opacity: 1; }
+
+    /* ============ COURS - DÉTAIL FORMATION ============ */
+    .toolbar-row { max-width: 1400px; margin: 20px auto 4px; padding: 0 24px; display: flex; gap: 10px; }
+    .search-input { flex: 1; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 12px; padding: 10px 14px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 0.86em; outline: none; }
+    .search-input:focus { border-color: rgba(79,124,255,0.55); }
+    .btn-add-notion { background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: #fff; border: none; border-radius: 50px; padding: 10px 20px; font-size: 0.85em; font-weight: 600; cursor: pointer; white-space: nowrap; }
+
+    .chapitre-header { max-width: 1400px; margin: 12px auto 6px; padding: 0 24px; font-size: 0.68em; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--accent3); display: flex; align-items: center; gap: 8px; opacity: .85; }
+    .chapitre-header:first-child { margin-top: 4px; }
+    .chapitre-header::after { content: ''; flex: 1; height: 1px; background: var(--divider); }
+    #coursDetailBody .n-list { display: flex; flex-direction: column; gap: 14px; max-width: 1400px; margin: 0 auto 8px; padding: 0 24px; }
+
+    .n-capsule { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 18px; padding: 16px 20px; cursor: pointer; transition: box-shadow .3s, border-color .3s; position: relative; }
+    .n-capsule::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg, var(--accent1), var(--accent2)); border-radius:18px 18px 0 0; }
+    .n-capsule:hover { box-shadow: 0 10px 32px var(--shadow); border-color: var(--card-border-hover); }
+    .n-capsule.open { cursor: default; box-shadow: 0 10px 32px var(--shadow); border-color: var(--card-border-hover); }
+    .n-capsule.aging-blue   { background: rgba(100,180,255,0.06); border-color: rgba(100,180,255,0.2); }
+    .n-capsule.aging-orange { background: rgba(247,151,30,0.06);  border-color: rgba(247,151,30,0.2); }
+    .n-capsule.aging-red    { background: rgba(252,92,101,0.06);  border-color: rgba(252,92,101,0.2); }
+
+    .n-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .n-header-left { display: flex; align-items: flex-start; gap: 8px; min-width: 0; flex: 1; }
+    .n-delete-btn { width: 24px; height: 24px; background: rgba(252,92,101,0.1); border: 1px solid rgba(252,92,101,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .n-delete-btn:hover { background: rgba(252,92,101,0.25); border-color: rgba(252,92,101,0.5); }
+    .n-delete-btn svg { width: 10px; height: 10px; stroke: #fc5c65; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+    .n-chevron { width: 26px; height: 26px; background: var(--chevron-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: transform .35s; flex-shrink: 0; }
+    .n-capsule.open .n-chevron { transform: rotate(180deg); background: rgba(79,124,255,0.3); }
+    .n-chevron svg { width: 12px; height: 12px; stroke: var(--text-secondary); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .n-header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+    .n-title-input { display: block; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 3px 6px; margin: -3px -6px 2px; font-size: 1.02em; font-weight: 700; color: var(--text-primary); width: calc(100% + 12px); cursor: pointer; font-family: 'Inter', sans-serif; }
+    .n-title-input:hover { border-color: var(--card-border-hover); }
+    .n-title-input:focus { background: var(--input-bg); border-color: rgba(79,124,255,0.55); box-shadow: 0 0 0 3px rgba(79,124,255,0.12); cursor: text; outline: none; }
+    .n-sub-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .n-chapitre-input { background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 1px 5px; margin: 0 -5px; font-size: 0.78em; color: var(--text-muted); cursor: pointer; font-family: 'Inter', sans-serif; }
+    .n-chapitre-input:hover { border-color: var(--card-border-hover); color: var(--text-secondary); }
+    .n-chapitre-input:focus { background: var(--input-bg); border-color: rgba(79,124,255,0.55); color: var(--text-primary); cursor: text; outline: none; }
+    .n-dates { font-size: 0.78em; color: var(--text-muted); flex-shrink: 0; }
+
+    .n-status-select { appearance: none; -webkit-appearance: none; -moz-appearance: none; border: none; border-radius: 20px; padding: 5px 26px 5px 12px; font-size: 0.72em; font-weight: 600; text-transform: uppercase; letter-spacing: .2px; cursor: pointer; margin-top: 10px; font-family: 'Inter', sans-serif; background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%); background-position: right 14px center, right 9px center; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; opacity: .85; }
+    .n-status-select:hover, .n-status-select:focus { opacity: 1; outline: none; }
+    .n-status-select option { background: #14213d; color: #fff; text-transform: none; }
+    .st-acquis      { background: rgba(72,207,173,0.15); color:#48cfad; }
+    .st-en-cours    { background: rgba(167,139,250,0.15); color:#a78bfa; }
+    .st-a-reviser   { background: rgba(252,92,101,0.15); color:#fc5c65; }
+    .st-a-decouvrir { background: rgba(100,180,255,0.15); color:#64b4ff; }
+
+    .n-content-outer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s cubic-bezier(.4,0,.2,1); }
+    .n-capsule.open .n-content-outer { grid-template-rows: 1fr; }
+    .n-content { overflow: hidden; min-height: 0; }
+    .n-capsule.open .n-content { margin-top: 14px; }
+
+    .n-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px){ .n-form-row{ grid-template-columns: 1fr; } }
+    .n-form-group label { display: flex; align-items: center; justify-content: space-between; font-size: 0.7em; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 5px; }
+    .n-lock-btn { background: none; border: none; cursor: pointer; font-size: 1em; line-height: 1; padding: 2px 4px; opacity: .7; }
+    .n-lock-btn:hover { opacity: 1; }
+    .n-form-group textarea { width: 100%; min-height: 90px; resize: vertical; background: var(--input-bg-focus, var(--input-bg)); background: rgba(255,255,255,0.02); border: 1px solid var(--input-border); border-radius: 10px; padding: 9px 12px; font-size: 0.86em; font-family: 'Inter', sans-serif; color: var(--text-muted); outline: none; cursor: default; }
+    .n-form-group.unlocked textarea { background: var(--input-bg); color: var(--text-primary); border-color: rgba(79,124,255,0.5); cursor: text; box-shadow: 0 0 0 3px rgba(79,124,255,0.12); }
+    .n-form-group { margin-bottom: 14px; }
+
+    .n-journal-title { font-size: 0.7em; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .n-journal-add-btn { background: rgba(79,124,255,0.12); border: 1px solid rgba(79,124,255,0.3); color: var(--accent3); border-radius: 20px; padding: 4px 12px; font-size: 0.75em; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
+    .n-journal-entry { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--divider); }
+    .n-journal-entry:last-child { border-bottom: none; }
+    .n-journal-date { flex-shrink: 0; width: 80px; font-size: 0.75em; font-weight: 600; color: var(--accent3); }
+    .n-journal-text { font-size: 0.85em; color: var(--text-secondary); line-height: 1.5; white-space: pre-wrap; }
+    .n-journal-empty { font-size: 0.8em; color: var(--text-muted); font-style: italic; padding: 4px 0; }
+    .n-journal-new-form { display: none; gap: 8px; margin-top: 10px; background: rgba(79,124,255,0.06); border: 1px solid rgba(79,124,255,0.25); border-radius: 10px; padding: 10px; }
+    .n-journal-new-form.show { display: flex; flex-direction: column; }
+    .n-journal-new-form textarea { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 8px 10px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 0.85em; min-height: 50px; }
+    .n-journal-new-form .row { display: flex; gap: 8px; margin-top: 8px; }
+    .n-journal-new-form button { flex: 1; border: none; border-radius: 8px; padding: 7px; font-size: 0.8em; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; }
+    .jn-cancel { background: var(--input-bg); color: var(--text-secondary); }
+    .jn-valider { background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: #fff; }
+
+    .n-save-btn { width: 100%; padding: 10px; background: linear-gradient(135deg, var(--accent1), var(--accent2)); color: #fff; border: none; border-radius: 10px; font-size: 0.86em; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; margin-top: 4px; }
+    .n-save-btn:hover { opacity: 0.9; }
+
+    /* Réutilise le tableau des gammes (Généralités) */
+    .notion-card { max-width: 100%; margin: 0 auto; background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: 24px; overflow: hidden; box-shadow: 0 8px 40px var(--shadow); position: relative; }
+    .notion-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+    .notion-header { padding: 22px 28px 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--divider); flex-wrap: wrap; }
+    .notion-header-left { display: flex; flex-direction: column; gap: 6px; }
+    .notion-name { font-size: 1.2em; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+    .notion-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag { font-size: 0.72em; font-weight: 600; padding: 3px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; }
+    .tag-theory { background: rgba(79,124,255,0.12); color: var(--accent1); border: 1px solid rgba(79,124,255,0.25); }
+    .tag-scales { background: rgba(72,207,173,0.12); color: #48cfad; border: 1px solid rgba(72,207,173,0.25); }
+    .tag-improv { background: rgba(247,151,30,0.12); color: #f7971e; border: 1px solid rgba(247,151,30,0.25); }
+    .notion-meta { font-size: 0.75em; color: var(--text-muted); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .notion-meta span { display: flex; align-items: center; gap: 4px; }
+    .notion-meta svg { width: 11px; height: 11px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .notion-intro { padding: 18px 28px; font-size: 0.88em; color: var(--text-secondary); line-height: 1.7; border-bottom: 1px solid var(--divider); background: var(--row-alt); }
+    .notion-intro strong { color: var(--text-primary); }
+    .legend-row { padding: 14px 28px; display: flex; align-items: center; gap: 20px; border-bottom: 1px solid var(--divider); flex-wrap: wrap; }
+    .legend-title { font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+    .legend-items { display: flex; gap: 12px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.78em; color: var(--text-secondary); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .table-wrapper { overflow-x: auto; padding: 0 0 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
+    thead tr { background: var(--input-bg); }
+    thead th { padding: 12px 16px; text-align: left; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-secondary); white-space: nowrap; border-bottom: 1px solid var(--divider); }
+    thead th:first-child { padding-left: 28px; }
+    thead th:last-child  { padding-right: 28px; }
+    tbody tr { border-bottom: 1px solid var(--divider); transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:nth-child(even) { background: var(--row-alt); }
+    tbody tr:hover { background: var(--row-hover); }
+    td { padding: 11px 16px; color: var(--text-primary); vertical-align: middle; }
+    td:first-child { padding-left: 28px; }
+    td:last-child  { padding-right: 28px; }
+    .row-num { font-size: 0.75em; color: var(--text-muted); font-weight: 600; width: 28px; text-align: center; }
+    .scale-major { font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+    .scale-major .note-name { font-size: 1.05em; }
+    .scale-minor { color: var(--text-secondary); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .accidental-cell { display: flex; align-items: center; gap: 8px; }
+    .accidental-count { font-weight: 700; font-size: 1em; min-width: 20px; text-align: center; }
+    .accidental-dots { display: flex; gap: 3px; flex-wrap: wrap; max-width: 120px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .sharp-color { color: #f7971e; }
+    .flat-color  { color: #6c63ff; }
+    .neutral     { color: var(--text-muted); }
+    .dot-sharp { background: #f7971e; }
+    .dot-flat  { background: #6c63ff; }
+    .armure-cell { font-size: 0.82em; color: var(--text-secondary); font-style: italic; max-width: 200px; line-height: 1.4; }
+    .armure-symbol { font-size: 1.1em; font-style: normal; font-weight: 600; }
+    .badge-neutral { display: inline-flex; align-items: center; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; padding: 2px 8px; font-size: 0.8em; color: var(--text-muted); font-style: normal; }
+    tr.highlight-row td { background: rgba(108,99,255,0.06); }
+    tr.highlight-row:hover td { background: rgba(108,99,255,0.1); }
+    .notion-footer { padding: 16px 28px; border-top: 1px solid var(--divider); background: var(--row-alt); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .footer-note { font-size: 0.78em; color: var(--text-muted); display: flex; align-items: flex-start; gap: 6px; line-height: 1.5; max-width: 600px; }
+    .footer-note strong { color: var(--text-secondary); }
+    .footer-date { font-size: 0.75em; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+    .footer-date svg { width: 11px; height: 11px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   </style>
 </head>
 <body>
 
-  <div class="page-header">
-    <div class="header-row1">
-      <div class="app-title">
-        🎵 Mes Morceaux
-        <span class="module-count" id="headerModuleCount">0 morceau</span>
-      </div>
-      <div class="header-actions">
-        <select class="sort-select" id="sortSelect" title="Trier les morceaux">
-          <option value="manuel">↕️ Manuel</option>
-          <option value="fraicheur">🕐 À retravailler</option>
-          <option value="note-desc">⭐ Note ↓</option>
-          <option value="note-asc">⭐ Note ↑</option>
-          <option value="titre">🔤 Titre A-Z</option>
-          <option value="duree">⏱️ Durée ↓</option>
-        </select>
-        <button class="btn btn-ghost" id="themeToggle">☀️ Mode clair</button>
-        <button class="btn btn-export" id="exportBtn">⬇️ Exporter</button>
-        <button class="btn btn-import" id="importBtn">⬆️ Importer</button>
-        <button class="btn btn-add" id="addBtn">＋ Ajouter un morceau</button>
-      </div>
+  <!-- ============ ACCUEIL ============ -->
+  <div class="view active" id="view-home">
+    <div class="home-title">🎹 Mon suivi piano</div>
+    <div class="home-sub">Choisis un espace</div>
+    <div class="home-actions">
+      <button class="btn btn-export js-export-btn">⬇️ Exporter toutes mes données</button>
+      <button class="btn btn-import js-import-btn">⬆️ Importer</button>
     </div>
-    <div class="summary-row">
-      <div class="pill-cours" id="pillCours">
-        <div class="pill-icon">📚</div>
-        <div class="pill-label">Cours</div>
-        <div class="pill-sub">Gammes</div>
+    <div class="home-grid">
+      <div class="home-tile ht-morceaux" onclick="showView('view-morceaux')">
+        <div class="icon">🎹</div>
+        <div class="title">Morceaux</div>
+        <div class="stat" id="homeStatMorceaux">—</div>
       </div>
-      <div class="sep-cours"></div>
-      <div class="stat-pill active active-total" data-filter="total">
-        <div class="pill-count val-purple" id="s-total">0</div>
-        <div class="pill-label">Total</div>
-        <div class="pill-divider"></div>
-        <div class="pill-time">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span id="s-time-total">—</span>
-        </div>
+      <div class="home-tile ht-generalites" onclick="showView('view-generalites')">
+        <div class="icon">📖</div>
+        <div class="title">Généralités</div>
+        <div class="stat">Repères théoriques toujours sous la main</div>
       </div>
-      <div class="stat-pill" data-filter="maitrise">
-        <div class="pill-count val-green" id="s-maitrise">0</div>
-        <div class="pill-label">Maîtrisés</div>
-        <div class="pill-divider"></div>
-        <div class="pill-time">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span id="s-time-maitrise">—</span>
-        </div>
-      </div>
-      <div class="stat-pill" data-filter="non-maitrise">
-        <div class="pill-count val-red" id="s-non-maitrise">0</div>
-        <div class="pill-label">Non maîtrisés</div>
-        <div class="pill-divider"></div>
-        <div class="pill-time">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span id="s-time-non-maitrise">—</span>
-        </div>
-      </div>
-      <div class="stat-pill" data-filter="a-faire">
-        <div class="pill-count val-orange" id="s-a-faire">0</div>
-        <div class="pill-label">À faire</div>
-        <div class="pill-divider"></div>
-        <div class="pill-time">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span id="s-time-a-faire">—</span>
-        </div>
-      </div>
-      <div class="stat-pill" data-filter="a-perfectionner">
-        <div class="pill-count val-violet" id="s-a-perfectionner">0</div>
-        <div class="pill-label">À perfectionner</div>
-        <div class="pill-divider"></div>
-        <div class="pill-time">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span id="s-time-a-perfectionner">—</span>
-        </div>
+      <div class="home-tile ht-cours" onclick="showView('view-cours-list')">
+        <div class="icon">🎓</div>
+        <div class="title">Cours</div>
+        <div class="stat" id="homeStatCours">—</div>
       </div>
     </div>
   </div>
 
-  <!-- PANNEAU COURS -->
-  <div class="cours-panel" id="coursPanel">
-    <div class="cours-panel-inner">
-      <div class="cours-stats-row">
-        <div class="cours-stat-card purple"><div class="s-val">1</div><div class="s-lbl">Notion affichée</div></div>
-        <div class="cours-stat-card green"><div class="s-val">15</div><div class="s-lbl">Gammes majeures</div></div>
-        <div class="cours-stat-card orange"><div class="s-val">15</div><div class="s-lbl">Gammes mineures</div></div>
-        <div class="cours-stat-card red"><div class="s-val">7</div><div class="s-lbl">Dièses max</div></div>
+  <!-- ============ MORCEAUX ============ -->
+  <div class="view" id="view-morceaux">
+    <div class="page-header">
+      <div class="header-row1">
+        <div class="header-back"><button class="btn btn-ghost" onclick="showView('view-home')">← Accueil</button></div>
+        <div class="app-title">
+          🎵 Mes Morceaux
+          <span class="module-count" id="headerModuleCount">0 morceau</span>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-ghost" id="themeToggle">☀️ Mode clair</button>
+          <button class="btn btn-export js-export-btn">⬇️ Exporter</button>
+          <button class="btn btn-import js-import-btn">⬆️ Importer</button>
+          <button class="btn btn-add" id="addBtn">＋ Ajouter un morceau</button>
+        </div>
       </div>
+      <div class="summary-row">
+        <div class="stat-pill active active-total" data-filter="total">
+          <div class="pill-count val-purple" id="s-total">0</div>
+          <div class="pill-label">Total</div>
+          <div class="pill-divider"></div>
+          <div class="pill-time">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="s-time-total">—</span>
+          </div>
+        </div>
+        <div class="stat-pill" data-filter="maitrise">
+          <div class="pill-count val-green" id="s-maitrise">0</div>
+          <div class="pill-label">Maîtrisés</div>
+          <div class="pill-divider"></div>
+          <div class="pill-time">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="s-time-maitrise">—</span>
+          </div>
+        </div>
+        <div class="stat-pill" data-filter="non-maitrise">
+          <div class="pill-count val-red" id="s-non-maitrise">0</div>
+          <div class="pill-label">Non maîtrisés</div>
+          <div class="pill-divider"></div>
+          <div class="pill-time">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="s-time-non-maitrise">—</span>
+          </div>
+        </div>
+        <div class="stat-pill" data-filter="a-faire">
+          <div class="pill-count val-orange" id="s-a-faire">0</div>
+          <div class="pill-label">À faire</div>
+          <div class="pill-divider"></div>
+          <div class="pill-time">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="s-time-a-faire">—</span>
+          </div>
+        </div>
+        <div class="stat-pill" data-filter="a-perfectionner">
+          <div class="pill-count val-violet" id="s-a-perfectionner">0</div>
+          <div class="pill-label">À perfectionner</div>
+          <div class="pill-divider"></div>
+          <div class="pill-time">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="s-time-a-perfectionner">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-banner" id="filterBanner">
+      <div class="filter-banner-text">
+        🔍 Filtre actif :
+        <span class="filter-badge" id="filterBadge"></span>
+        <span id="filterCount"></span>
+      </div>
+      <button class="filter-clear" id="filterClear">✕ Tout afficher</button>
+    </div>
+
+    <div class="main-content">
+      <div id="capsuleList"></div>
+    </div>
+  </div>
+
+  <!-- ============ GÉNÉRALITÉS ============ -->
+  <div class="view" id="view-generalites">
+    <div class="top-bar">
+      <button class="back-btn" onclick="showView('view-home')">← Accueil</button>
+      <div>
+        <div class="top-bar-title">📖 Généralités</div>
+        <div class="top-bar-sub">Repères théoriques transverses, indépendants d'une formation précise</div>
+      </div>
+      <div class="top-bar-actions">
+        <button class="btn btn-ghost js-export-btn" title="Exporter toutes les données">⬇️ Export</button>
+        <button class="btn btn-ghost js-import-btn" title="Importer des données">⬆️ Import</button>
+      </div>
+    </div>
+    <div class="gen-hint">💡 Contenu de référence : pas de saisie de ta part ici — tu me demandes d'ajouter ou de modifier une fiche et je m'en occupe.</div>
+    <div class="gen-list">
+
       <div class="notion-card">
         <div class="notion-header">
           <div class="notion-header-left">
@@ -677,32 +771,56 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
-  <div class="filter-banner" id="filterBanner">
-    <div class="filter-banner-text">
-      🔍 Filtre actif :
-      <span class="filter-badge" id="filterBadge"></span>
-      <span id="filterCount"></span>
+  <!-- ============ COURS - LISTE FORMATIONS ============ -->
+  <div class="view" id="view-cours-list">
+    <div class="top-bar">
+      <button class="back-btn" onclick="showView('view-home')">← Accueil</button>
+      <div>
+        <div class="top-bar-title">🎓 Cours</div>
+        <div class="top-bar-sub">Une pastille par formation suivie</div>
+      </div>
+      <div class="top-bar-actions">
+        <button class="btn btn-ghost js-export-btn" title="Exporter toutes les données">⬇️ Export</button>
+        <button class="btn btn-ghost js-import-btn" title="Importer des données">⬆️ Import</button>
+      </div>
     </div>
-    <button class="filter-clear" id="filterClear">✕ Tout afficher</button>
+    <div class="cours-tiles" id="coursTilesList"></div>
+  </div>
+
+  <!-- ============ COURS - DÉTAIL FORMATION ============ -->
+  <div class="view" id="view-cours-detail">
+    <div class="top-bar">
+      <button class="back-btn" onclick="showView('view-cours-list')">← Mes formations</button>
+      <div>
+        <div class="top-bar-title" id="coursDetailTitle">—</div>
+        <div class="top-bar-sub" id="coursDetailSub"></div>
+      </div>
+      <div class="top-bar-actions">
+        <button class="btn btn-ghost js-export-btn" title="Exporter toutes les données">⬇️ Export</button>
+        <button class="btn btn-ghost js-import-btn" title="Importer des données">⬆️ Import</button>
+      </div>
+    </div>
+    <div class="toolbar-row">
+      <input class="search-input" id="notionSearch" placeholder="🔍 Rechercher un chapitre, une notion...">
+      <button class="btn-add-notion" id="addNotionBtn">＋ Nouvelle notion</button>
+    </div>
+    <div id="coursDetailBody"></div>
   </div>
 
   <input type="file" id="importInput" accept=".json">
 
-  <div class="main-content">
-    <div id="capsuleList"></div>
-  </div>
-
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
-      <h3 id="modalTitle">📂 Importer des données</h3>
-      <p id="modalText">Tu es sur le point d'importer un fichier de sauvegarde.</p>
-      <div class="modal-warning" id="modalWarning">⚠️ Cette action <strong>remplacera toutes tes données actuelles</strong>. Pense à exporter d'abord si tu veux les conserver.</div>
+      <h3>📂 Importer des données</h3>
+      <p>Tu es sur le point d'importer un fichier de sauvegarde.</p>
+      <div class="modal-warning">⚠️ Cette action <strong>remplacera toutes tes données actuelles</strong> (morceaux, cours et formations). Pense à exporter d'abord si tu veux les conserver.</div>
       <div class="modal-actions">
         <button class="modal-btn modal-btn-cancel" id="modalCancel">Annuler</button>
-        <button class="modal-btn modal-btn-confirm" id="modalConfirm">Confirmer</button>
+        <button class="modal-btn modal-btn-confirm" id="modalConfirm">Remplacer mes données</button>
       </div>
     </div>
   </div>
@@ -710,69 +828,50 @@
   <div class="toast" id="toast"></div>
 
 <script>
-  // PANNEAU COURS
-  const pillCours  = document.getElementById('pillCours');
-  const coursPanel = document.getElementById('coursPanel');
-  let coursOpen = false;
-  pillCours.addEventListener('click', () => {
-    coursOpen = !coursOpen;
-    pillCours.classList.toggle('active', coursOpen);
-    coursPanel.classList.toggle('open', coursOpen);
-  });
+  // ============================================================
+  // NAVIGATION
+  // ============================================================
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+    if (id === 'view-home') updateHomeStats();
+    if (id === 'view-cours-list') renderCoursList();
+  }
 
+  // ============================================================
   // DONNÉES
+  // ============================================================
   let modules       = JSON.parse(localStorage.getItem('morceaux')) || [];
-  let theme         = localStorage.getItem('theme') || 'dark';
-  let sortMode      = localStorage.getItem('sortMode') || 'manuel';
-  let activeFilter  = 'total';
-  let dragSrcIndex  = null;
-  let pendingImport = null;
-  let modalAction   = null; // callback de confirmation de la modal générique
-  const EXPORT_REMINDER_DAYS = 7;
-
-  // Rappel d'export : badge rouge si jamais exporté ou export > 7 jours, et qu'il y a des données
-  function updateExportReminder() {
-    const btn = document.getElementById('exportBtn');
-    const existing = btn.querySelector('.export-alert');
-    const last = localStorage.getItem('lastExport');
-    const stale = !last || (Date.now() - new Date(last)) / 86400000 > EXPORT_REMINDER_DAYS;
-    const needed = modules.length > 0 && stale;
-    if (needed && !existing) {
-      const dot = document.createElement('span');
-      dot.className = 'export-alert';
-      dot.title = last ? `Dernier export : il y a plus de ${EXPORT_REMINDER_DAYS} jours` : 'Aucun export effectué';
-      btn.appendChild(dot);
-    } else if (!needed && existing) {
-      existing.remove();
-    }
-  }
-
-  // Échappement HTML — évite qu'un titre avec " ou < casse le rendu/l'édition
-  function esc(str) {
-    return String(str ?? '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  // Migration : id unique + journal de sessions pour les données existantes
-  function genId() { return 'm_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
-  function migrate(list) {
-    let touched = false;
-    list.forEach(m => {
-      if (!m.id)       { m.id = genId(); touched = true; }
-      if (!m.sessions) { m.sessions = []; touched = true; }
-    });
-    return touched;
-  }
-  if (migrate(modules)) localStorage.setItem('morceaux', JSON.stringify(modules));
+  let formations     = JSON.parse(localStorage.getItem('formations')) || [
+    { id: 'f_improvisation', nom: 'Improvisation', sousTitre: 'Le Piano Grand Ouvert — Tome I : On commence en douceur avec les fondamentaux' }
+  ];
+  let notions        = JSON.parse(localStorage.getItem('notions')) || [];
+  let theme          = localStorage.getItem('theme') || 'dark';
+  let activeFilter   = 'total';
+  let dragSrcIndex   = null;
+  let pendingImport  = null;
+  let currentFormationId = null;
 
   document.documentElement.setAttribute('data-theme', theme);
   updateThemeBtn();
 
   function saveToStorage() {
     localStorage.setItem('morceaux', JSON.stringify(modules));
+    localStorage.setItem('formations', JSON.stringify(formations));
+    localStorage.setItem('notions', JSON.stringify(notions));
     localStorage.setItem('theme', theme);
-    localStorage.setItem('sortMode', sortMode);
+  }
+
+  function uid(prefix) {
+    return prefix + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
+  }
+
+  function updateHomeStats() {
+    document.getElementById('homeStatMorceaux').textContent =
+      modules.length === 0 ? 'Aucun morceau pour l\'instant' : `${modules.length} morceau${modules.length>1?'x':''} en travail`;
+    document.getElementById('homeStatCours').textContent =
+      formations.length === 0 ? 'Aucune formation suivie' : `${formations.length} formation${formations.length>1?'s':''} · ${notions.length} notion${notions.length>1?'s':''}`;
   }
 
   // THEME
@@ -786,7 +885,9 @@
     document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️ Mode clair' : '🌙 Mode sombre';
   }
 
-  // FILTRES
+  // ============================================================
+  // MORCEAUX (inchangé)
+  // ============================================================
   const filterLabels = {
     'total':           { label: 'Tous les morceaux', badgeClass: 'badge-total' },
     'maitrise':        { label: 'Maîtrisés',         badgeClass: 'badge-maitrise' },
@@ -824,27 +925,25 @@
 
   document.getElementById('filterClear').addEventListener('click', () => setFilter('total'));
 
-  // EXPORT
-  document.getElementById('exportBtn').addEventListener('click', () => {
-    if (modules.length === 0) { showToast('Aucun morceau à exporter !', 'error'); return; }
-    const data = { version: '1.0', exportDate: new Date().toISOString(), morceaux: modules };
+  // EXPORT / IMPORT — mêmes données (morceaux + formations + notions), accessibles depuis Accueil, Cours et Morceaux
+  function doExport() {
+    if (modules.length === 0 && notions.length === 0) { showToast('Aucune donnée à exporter !', 'error'); return; }
+    const data = { version: '1.1', exportDate: new Date().toISOString(), morceaux: modules, formations: formations, notions: notions };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     const now  = new Date();
     const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-    a.href = url; a.download = `mes-morceaux-${date}.json`; a.click();
+    a.href = url; a.download = `mon-suivi-piano-${date}.json`; a.click();
     URL.revokeObjectURL(url);
-    localStorage.setItem('lastExport', new Date().toISOString());
-    updateExportReminder();
-    showToast(`✓ ${modules.length} morceau(x) exporté(s)`, 'success');
-  });
+    showToast(`✓ Export terminé (${modules.length} morceau(x), ${notions.length} notion(s))`, 'success');
+  }
+  document.querySelectorAll('.js-export-btn').forEach(b => b.addEventListener('click', doExport));
 
-  // IMPORT
-  document.getElementById('importBtn').addEventListener('click', () => {
+  document.querySelectorAll('.js-import-btn').forEach(b => b.addEventListener('click', () => {
     document.getElementById('importInput').value = '';
     document.getElementById('importInput').click();
-  });
+  }));
   document.getElementById('importInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -854,42 +953,28 @@
       try {
         const parsed = JSON.parse(evt.target.result);
         if (!parsed.morceaux || !Array.isArray(parsed.morceaux)) { showToast('❌ Fichier invalide ou corrompu', 'error'); return; }
-        pendingImport = parsed.morceaux;
-        migrate(pendingImport);
-        openModal({
-          title: '📂 Importer des données',
-          text: "Tu es sur le point d'importer un fichier de sauvegarde.",
-          warning: '⚠️ Cette action <strong>remplacera toutes tes données actuelles</strong>. Pense à exporter d\'abord si tu veux les conserver.',
-          confirmLabel: 'Remplacer mes données',
-          onConfirm: () => {
-            modules = parsed.morceaux;
-            saveToStorage(); setFilter('total');
-            showToast(`✓ ${modules.length} morceau(x) importé(s) avec succès`, 'success');
-          }
-        });
+        pendingImport = {
+          morceaux: parsed.morceaux,
+          formations: Array.isArray(parsed.formations) ? parsed.formations : formations,
+          notions: Array.isArray(parsed.notions) ? parsed.notions : []
+        };
+        openModal();
       } catch(err) { showToast('❌ Impossible de lire ce fichier', 'error'); }
     };
     reader.readAsText(file);
   });
 
-  // MODAL GÉNÉRIQUE — un seul composant pour import et suppression
-  function openModal(cfg) {
-    document.getElementById('modalTitle').innerHTML   = cfg.title;
-    document.getElementById('modalText').innerHTML    = cfg.text;
-    document.getElementById('modalWarning').innerHTML = cfg.warning;
-    document.getElementById('modalConfirm').textContent = cfg.confirmLabel || 'Confirmer';
-    modalAction = cfg.onConfirm;
-    document.getElementById('modalOverlay').classList.add('show');
-  }
-  function closeModal() {
-    document.getElementById('modalOverlay').classList.remove('show');
-    pendingImport = null; modalAction = null;
-  }
-  document.getElementById('modalCancel').addEventListener('click', () => closeModal());
+  // MODAL
+  function openModal()  { document.getElementById('modalOverlay').classList.add('show'); }
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); pendingImport = null; }
+  document.getElementById('modalCancel').addEventListener('click', () => { closeModal(); showToast('Import annulé', 'info'); });
   document.getElementById('modalConfirm').addEventListener('click', () => {
-    const action = modalAction;
-    closeModal();
-    if (action) action();
+    if (!pendingImport) return;
+    modules = pendingImport.morceaux;
+    formations = pendingImport.formations;
+    notions = pendingImport.notions;
+    saveToStorage(); setFilter('total'); closeModal();
+    showToast(`✓ Import réussi (${modules.length} morceau(x), ${notions.length} notion(s))`, 'success');
   });
   document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
@@ -900,6 +985,11 @@
     if (diff === 0) return "Aujourd'hui";
     if (diff === 1) return 'Il y a 1 jour';
     return `Il y a ${diff} jours`;
+  }
+  function shortDate(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   }
   function formatDuration(min, sec) {
     const m = parseInt(min) || 0;
@@ -929,21 +1019,7 @@
     'a-perfectionner': { cls: 'status-a-perfectionner', label: 'À perfectionner' }
   };
 
-  // Date du dernier travail : dernière session loggée, sinon dernière modification
-  function lastWork(mod) {
-    if (mod.sessions && mod.sessions.length) return mod.sessions[mod.sessions.length - 1];
-    return mod.lastUpdate;
-  }
-  function isToday(dateStr) {
-    if (!dateStr) return false;
-    const d = new Date(dateStr), n = new Date();
-    return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
-  }
-  function formatSessionDate(dateStr) {
-    return new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
-  }
-
-  // FRAÎCHEUR
+  // FRAÎCHEUR (réutilisée par les morceaux ET les notions de cours)
   function getFreshnessInfo(dateStr) {
     if (!dateStr) return { cls: 'aging-red', dotCls: 'dot-red', label: 'Jamais mis à jour' };
     const days = Math.floor((Date.now() - new Date(dateStr)) / 86400000);
@@ -979,7 +1055,7 @@
       total === 0 ? '0 morceau' : total === 1 ? '1 morceau' : `${total} morceaux`;
   }
 
-  // RENDU CAPSULE
+  // RENDU CAPSULE MORCEAU
   function createCapsuleEl(mod, realIndex) {
     const el = document.createElement('div');
     const freshness = getFreshnessInfo(mod.lastUpdate);
@@ -993,16 +1069,8 @@
 
     const s = statusMap[mod.status] || statusMap['a-faire'];
     const tonaliteBadge = mod.tonalite
-      ? `<div class="tonalite-badge"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>${esc(mod.tonalite)}</div>`
+      ? `<div class="tonalite-badge"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>${mod.tonalite}</div>`
       : '';
-    const doneToday = isToday(lastWork(mod)) && mod.sessions.length && isToday(mod.sessions[mod.sessions.length - 1]);
-    const nSessions = mod.sessions.length;
-    const practiceBtn = doneToday
-      ? `<button class="practice-btn done-today" disabled>✓ Travaillé aujourd'hui</button>`
-      : `<button class="practice-btn" title="Logger une session de travail">🎹 Travaillé aujourd'hui</button>`;
-    const lastSessions = mod.sessions.slice(-5).reverse().map(d =>
-      `<div class="session-item"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>${formatSessionDate(d)}</div>`
-    ).join('') || `<div class="session-item" style="opacity:0.6;">Aucune session loggée pour l'instant</div>`;
 
     el.innerHTML = `
       <div class="capsule-header">
@@ -1010,7 +1078,7 @@
           <div class="header-left">
             <span class="drag-handle" title="Déplacer">⠿</span>
             <div class="freshness-dot ${freshness.dotCls}" title="Dernière mise à jour : ${freshness.label}"></div>
-            <div class="capsule-title">${esc(mod.title)}</div>
+            <div class="capsule-title">${mod.title}</div>
           </div>
           <div class="header-right">
             <div class="delete-btn" title="Supprimer">
@@ -1029,25 +1097,25 @@
           <div class="header-bottom-left">
             <div class="info-pill">
               <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              ${daysSince(lastWork(mod))}
+              ${daysSince(mod.lastUpdate)}
             </div>
             <div class="info-pill">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               ${formatDuration(mod.durationMin, mod.durationSec)}
             </div>
           </div>
-          <div class="header-bottom-right">${tonaliteBadge}${practiceBtn}</div>
+          <div class="header-bottom-right">${tonaliteBadge}</div>
         </div>
       </div>
       <div class="divider"></div>
       <div class="capsule-content">
         <div class="form-group">
           <label>Titre du morceau</label>
-          <input type="text" class="edit-title" value="${esc(mod.title)}">
+          <input type="text" class="edit-title" value="${mod.title}">
         </div>
         <div class="form-group">
           <label>🎼 Tonalité</label>
-          <input type="text" class="edit-tonalite" placeholder="Ex : Do majeur, La mineur, G#..." value="${esc(mod.tonalite)}">
+          <input type="text" class="edit-tonalite" placeholder="Ex : Do majeur, La mineur, G#..." value="${mod.tonalite || ''}">
         </div>
         <div class="form-group">
           <label>Note</label>
@@ -1069,40 +1137,20 @@
             <input type="number" class="edit-sec" min="0" max="59" placeholder="Secondes" value="${mod.durationSec || ''}">
           </div>
         </div>
-        <div class="sessions-block">
-          <label style="display:block;font-size:0.72em;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">🎹 Journal de pratique — ${nSessions} session${nSessions > 1 ? 's' : ''}</label>
-          <div class="sessions-list">${lastSessions}</div>
-        </div>
         <div class="form-group">
           <label>Commentaire</label>
-          <textarea class="edit-comment">${esc(mod.comment)}</textarea>
+          <textarea class="edit-comment">${mod.comment || ''}</textarea>
         </div>
         <button class="save-btn">Enregistrer</button>
       </div>
     `;
 
-    // Bouton "Travaillé aujourd'hui" → logge une session, rafraîchit la fraîcheur
-    const pBtn = el.querySelector('.practice-btn');
-    if (pBtn && !pBtn.disabled) {
-      pBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const idx = modules.findIndex(m => m.id === mod.id);
-        if (idx === -1) return;
-        modules[idx].sessions.push(new Date().toISOString());
-        saveToStorage();
-        renderAll();
-        showToast('🎹 Session enregistrée — bien joué !', 'success');
-      });
-    }
-
-    // Toggle
     el.addEventListener('click', function(e) {
-      if (e.target.closest('.capsule-content') || e.target.closest('.delete-btn') || e.target.closest('.drag-handle') || e.target.closest('.practice-btn')) return;
+      if (e.target.closest('.capsule-content') || e.target.closest('.delete-btn') || e.target.closest('.drag-handle')) return;
       const isOpen = el.classList.toggle('open');
       el.querySelector('.divider').style.display = isOpen ? 'block' : 'none';
     });
 
-    // Étoiles
     el.querySelectorAll('.stars-edit .star').forEach(star => {
       star.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -1110,60 +1158,41 @@
         el.querySelectorAll('.stars-edit .star').forEach(s => {
           s.classList.toggle('selected', parseInt(s.getAttribute('data-value')) <= val);
         });
-        const idx = modules.findIndex(m => m.id === mod.id);
-        if (idx !== -1) modules[idx].rating = val;
+        modules[realIndex].rating = val;
       });
     });
 
-    // Sauvegarde — index retrouvé par id : reste juste même quand la liste est triée
     el.querySelector('.save-btn').addEventListener('click', function(e) {
       e.stopPropagation();
-      const idx = modules.findIndex(m => m.id === mod.id);
-      if (idx === -1) return;
-      modules[idx].title       = el.querySelector('.edit-title').value.trim() || modules[idx].title;
-      modules[idx].tonalite    = el.querySelector('.edit-tonalite').value.trim();
-      modules[idx].status      = el.querySelector('.edit-status').value;
-      modules[idx].durationMin = el.querySelector('.edit-min').value;
-      modules[idx].durationSec = el.querySelector('.edit-sec').value;
-      modules[idx].comment     = el.querySelector('.edit-comment').value;
-      modules[idx].lastUpdate  = new Date().toISOString();
+      modules[realIndex].title       = el.querySelector('.edit-title').value.trim() || modules[realIndex].title;
+      modules[realIndex].tonalite    = el.querySelector('.edit-tonalite').value.trim();
+      modules[realIndex].status      = el.querySelector('.edit-status').value;
+      modules[realIndex].durationMin = el.querySelector('.edit-min').value;
+      modules[realIndex].durationSec = el.querySelector('.edit-sec').value;
+      modules[realIndex].comment     = el.querySelector('.edit-comment').value;
+      modules[realIndex].lastUpdate  = new Date().toISOString();
       saveToStorage();
       renderAll();
       showToast('✓ Modifications enregistrées', 'success');
     });
 
-    // Suppression — modal stylée à la place du confirm() natif
     el.querySelector('.delete-btn').addEventListener('click', function(e) {
       e.stopPropagation();
-      openModal({
-        title: '🗑️ Supprimer ce morceau',
-        text: `« ${esc(mod.title)} » va être supprimé de ta liste.`,
-        warning: '⚠️ Cette action est <strong>définitive</strong> : le journal de pratique du morceau sera perdu aussi.',
-        confirmLabel: 'Supprimer',
-        onConfirm: () => {
-          const idx = modules.findIndex(m => m.id === mod.id);
-          if (idx === -1) return;
-          modules.splice(idx, 1);
-          saveToStorage();
-          renderAll();
-          showToast('Morceau supprimé', 'info');
-        }
-      });
+      if (confirm('Supprimer ce morceau ?')) {
+        modules.splice(realIndex, 1);
+        saveToStorage();
+        renderAll();
+      }
     });
 
-    // Drag & Drop
     const handle = el.querySelector('.drag-handle');
     el.setAttribute('draggable', 'false');
-    if (sortMode !== 'manuel') {
-      handle.classList.add('drag-off');
-      handle.title = 'Réordonner : repasse en tri Manuel';
-    } else {
-      handle.addEventListener('mousedown', (e) => { e.stopPropagation(); el.setAttribute('draggable', 'true'); });
-    }
+    handle.addEventListener('mousedown', (e) => { e.stopPropagation(); el.setAttribute('draggable', 'true'); });
+    document.addEventListener('mouseup', () => { el.setAttribute('draggable', 'false'); });
     el.addEventListener('dragstart', function(e) {
-      dragSrcIndex = mod.id;
+      dragSrcIndex = realIndex;
       e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', mod.id);
+      e.dataTransfer.setData('text/plain', realIndex);
       setTimeout(() => el.classList.add('dragging'), 0);
     });
     el.addEventListener('dragend', function() {
@@ -1173,7 +1202,7 @@
     });
     el.addEventListener('dragenter', function(e) {
       e.preventDefault();
-      if (mod.id !== dragSrcIndex) {
+      if (realIndex !== dragSrcIndex) {
         document.querySelectorAll('.capsule').forEach(c => c.classList.remove('drag-over'));
         el.classList.add('drag-over');
       }
@@ -1183,10 +1212,9 @@
     el.addEventListener('drop', function(e) {
       e.preventDefault(); e.stopPropagation();
       el.classList.remove('drag-over');
-      const fromId = e.dataTransfer.getData('text/plain');
-      const fromIndex = modules.findIndex(m => m.id === fromId);
-      const toIndex   = modules.findIndex(m => m.id === mod.id);
-      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return;
+      const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIndex   = realIndex;
+      if (fromIndex === toIndex || isNaN(fromIndex)) return;
       const moved = modules.splice(fromIndex, 1)[0];
       modules.splice(toIndex, 0, moved);
       dragSrcIndex = null;
@@ -1197,43 +1225,12 @@
     return el;
   }
 
-  // Un seul écouteur global (avant : un par capsule à chaque rendu → fuite)
-  document.addEventListener('mouseup', () => {
-    document.querySelectorAll('.capsule').forEach(c => c.setAttribute('draggable', 'false'));
-  });
-
-  // TRI
-  const statusOrder = { 'a-faire': 0, 'non-maitrise': 1, 'a-perfectionner': 2, 'maitrise': 3 };
-  function sortItems(items) {
-    const arr = [...items];
-    switch (sortMode) {
-      case 'fraicheur': // le plus anciennement travaillé en premier = priorité de révision
-        arr.sort((a, b) => new Date(lastWork(a.mod) || 0) - new Date(lastWork(b.mod) || 0));
-        break;
-      case 'note-desc': arr.sort((a, b) => (b.mod.rating || 0) - (a.mod.rating || 0)); break;
-      case 'note-asc':  arr.sort((a, b) => (a.mod.rating || 0) - (b.mod.rating || 0)); break;
-      case 'titre':     arr.sort((a, b) => a.mod.title.localeCompare(b.mod.title, 'fr', { sensitivity: 'base' })); break;
-      case 'duree':     arr.sort((a, b) => totalSeconds(b.mod) - totalSeconds(a.mod)); break;
-      // 'manuel' : ordre du tableau (drag & drop)
-    }
-    return arr;
-  }
-
-  const sortSelect = document.getElementById('sortSelect');
-  sortSelect.value = sortMode;
-  sortSelect.addEventListener('change', function() {
-    sortMode = this.value;
-    saveToStorage();
-    renderAll();
-  });
-
-  // RENDU GLOBAL
   function renderAll() {
     const list = document.getElementById('capsuleList');
     list.innerHTML = '';
-    const filtered = sortItems(modules
+    const filtered = modules
       .map((mod, realIndex) => ({ mod, realIndex }))
-      .filter(({ mod }) => activeFilter === 'total' || mod.status === activeFilter));
+      .filter(({ mod }) => activeFilter === 'total' || mod.status === activeFilter);
     if (filtered.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'empty-state';
@@ -1252,13 +1249,10 @@
       document.getElementById('filterCount').textContent = `— ${n} morceau${n > 1 ? 'x' : ''}`;
     }
     updateSummary();
-    updateExportReminder();
   }
 
-  // AJOUTER
   document.getElementById('addBtn').addEventListener('click', () => {
     modules.push({
-      id: genId(),
       title: `Nouveau morceau ${modules.length + 1}`,
       rating: 0,
       status: 'a-faire',
@@ -1266,7 +1260,6 @@
       comment: '',
       durationMin: '',
       durationSec: '',
-      sessions: [],
       lastUpdate: new Date().toISOString()
     });
     saveToStorage();
@@ -1283,13 +1276,329 @@
     toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 3000);
   }
 
-  // INIT
-  renderAll();
-
-  // PWA — enregistrement du service worker (ignoré en ouverture locale file://)
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+  // ============================================================
+  // COURS — liste des formations
+  // ============================================================
+  function renderCoursList() {
+    const wrap = document.getElementById('coursTilesList');
+    wrap.innerHTML = '';
+    formations.forEach(f => {
+      const n = notions.filter(x => x.formationId === f.id).length;
+      const tile = document.createElement('div');
+      tile.className = 'formation-tile';
+      tile.innerHTML = `
+        <div class="f-icon">🎼</div>
+        <div>
+          <div class="f-title">${f.nom}</div>
+          <div class="f-sub">${f.sousTitre || ''}${f.sousTitre ? ' · ' : ''}${n} notion${n>1?'s':''} notée${n>1?'s':''}</div>
+        </div>`;
+      tile.addEventListener('click', () => openFormation(f.id));
+      wrap.appendChild(tile);
+    });
+    const ghost = document.createElement('div');
+    ghost.className = 'formation-tile ghost';
+    ghost.innerHTML = '<div>＋ Ajouter une formation</div>';
+    ghost.addEventListener('click', addFormation);
+    wrap.appendChild(ghost);
   }
+
+  function addFormation() {
+    const nom = prompt('Nom de la formation :');
+    if (!nom || !nom.trim()) return;
+    const sousTitre = prompt('Sous-titre / organisme (facultatif) :') || '';
+    const f = { id: uid('f'), nom: nom.trim(), sousTitre: sousTitre.trim() };
+    formations.push(f);
+    saveToStorage();
+    renderCoursList();
+    showToast('✓ Formation ajoutée', 'success');
+  }
+
+  function openFormation(id) {
+    currentFormationId = id;
+    showView('view-cours-detail');
+    renderCoursDetail(id);
+  }
+
+  // ============================================================
+  // COURS — détail d'une formation (notions groupées par chapitre)
+  // ============================================================
+  function statutInfo(val) {
+    const map = {
+      'a-decouvrir': { cls: 'st-a-decouvrir', label: '🔵 À découvrir' },
+      'en-cours':    { cls: 'st-en-cours',    label: '🟣 En cours' },
+      'a-reviser':   { cls: 'st-a-reviser',   label: '🔴 À réviser' },
+      'acquis':      { cls: 'st-acquis',      label: '✅ Acquis' }
+    };
+    return map[val] || map['a-decouvrir'];
+  }
+
+  function renderCoursDetail(formationId, searchTerm) {
+    const formation = formations.find(f => f.id === formationId);
+    if (!formation) return;
+    document.getElementById('coursDetailTitle').textContent = '🎼 ' + formation.nom;
+    document.getElementById('coursDetailSub').textContent = formation.sousTitre || '';
+
+    let list = notions.filter(n => n.formationId === formationId);
+    if (searchTerm) {
+      const t = searchTerm.toLowerCase();
+      list = list.filter(n =>
+        (n.chapitre||'').toLowerCase().includes(t) ||
+        (n.sousChapitre||'').toLowerCase().includes(t) ||
+        (n.theorie||'').toLowerCase().includes(t) ||
+        (n.exercices||'').toLowerCase().includes(t)
+      );
+    }
+
+    // groupement par chapitre, ordre de première apparition
+    const order = [];
+    const groups = {};
+    list.forEach(n => {
+      const key = n.chapitre && n.chapitre.trim() ? n.chapitre : '(Sans chapitre)';
+      if (!groups[key]) { groups[key] = []; order.push(key); }
+      groups[key].push(n);
+    });
+
+    const body = document.getElementById('coursDetailBody');
+    body.innerHTML = '';
+
+    if (list.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.innerHTML = `
+        <div class="empty-icon">📖</div>
+        <div class="empty-title">${searchTerm ? 'Aucune notion ne correspond à ta recherche' : 'Aucune notion pour l\'instant'}</div>
+        <div class="empty-sub">${searchTerm ? '' : 'Clique sur "+ Nouvelle notion" pour commencer à noter ce que tu retiens de tes cours'}</div>
+      `;
+      body.appendChild(empty);
+      return;
+    }
+
+    order.forEach(chapitreKey => {
+      const h = document.createElement('div');
+      h.className = 'chapitre-header';
+      h.textContent = chapitreKey;
+      body.appendChild(h);
+      const listWrap = document.createElement('div');
+      listWrap.className = 'n-list';
+      groups[chapitreKey].forEach(n => listWrap.appendChild(createNotionCapsuleEl(n)));
+      body.appendChild(listWrap);
+    });
+  }
+
+  function createNotionCapsuleEl(n) {
+    const el = document.createElement('div');
+    const freshness = getFreshnessInfo(n.lastUpdate);
+    el.className = `n-capsule ${freshness.cls === 'fresh' ? '' : freshness.cls}`;
+    el.dataset.id = n.id;
+
+    const st = statutInfo(n.statut);
+    const journalHtml = (n.journal && n.journal.length)
+      ? n.journal.slice().reverse().map(j => `
+          <div class="n-journal-entry">
+            <div class="n-journal-date">${shortDate(j.date)}</div>
+            <div class="n-journal-text"></div>
+          </div>`).join('')
+      : `<div class="n-journal-empty">Pas encore de note de séance.</div>`;
+
+    el.innerHTML = `
+      <div class="n-header-top">
+        <div class="n-header-left">
+          <div class="freshness-dot ${freshness.dotCls}" style="margin-top:8px;" title="Dernière mise à jour : ${freshness.label}"></div>
+          <div style="flex:1; min-width:0;">
+            <input class="n-title-input" type="text" readonly value="${escAttr(n.sousChapitre || 'Nouvelle notion')}" data-field="sousChapitre">
+            <div class="n-sub-row">
+              <input class="n-chapitre-input" type="text" size="34" readonly value="${escAttr(n.chapitre || '')}" placeholder="Chapitre" data-field="chapitre">
+              <span class="n-dates">Notée le ${shortDate(n.dateCreation)}${n.lastUpdate && n.lastUpdate !== n.dateCreation ? ' · Dernier retour le ' + shortDate(n.lastUpdate) : ''}</span>
+            </div>
+          </div>
+        </div>
+        <div class="n-header-right">
+          <div class="n-delete-btn" title="Supprimer"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+          <div class="n-chevron"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+      </div>
+      <select class="n-status-select ${st.cls}" data-field="statut">
+        <option value="a-decouvrir" ${n.statut==='a-decouvrir'?'selected':''}>🔵 À découvrir</option>
+        <option value="en-cours"    ${n.statut==='en-cours'?'selected':''}>🟣 En cours</option>
+        <option value="a-reviser"  ${n.statut==='a-reviser'?'selected':''}>🔴 À réviser</option>
+        <option value="acquis"      ${n.statut==='acquis'?'selected':''}>✅ Acquis</option>
+      </select>
+
+      <div class="n-content-outer"><div class="n-content">
+        <div class="divider" style="display:block; margin:14px 0;"></div>
+
+        <div class="n-form-row">
+          <div class="n-form-group">
+            <label>Théorie — ce qui me semble important <button class="n-lock-btn">🔒</button></label>
+            <textarea readonly data-field="theorie">${n.theorie || ''}</textarea>
+          </div>
+          <div class="n-form-group">
+            <label>Exercices à faire <button class="n-lock-btn">🔒</button></label>
+            <textarea readonly data-field="exercices">${n.exercices || ''}</textarea>
+          </div>
+        </div>
+
+        <div class="n-journal-block">
+          <div class="n-journal-title">
+            📅 Commentaire — suivi au quotidien
+            <span class="n-journal-add-btn">+ Note du jour</span>
+          </div>
+          <div class="n-journal-list">${journalHtml}</div>
+          <div class="n-journal-new-form">
+            <textarea placeholder="Ta note du jour..."></textarea>
+            <div class="row"><button class="jn-cancel">Annuler</button><button class="jn-valider">Ajouter</button></div>
+          </div>
+        </div>
+
+        <button class="n-save-btn">Enregistrer</button>
+      </div></div>
+    `;
+
+    // texte du journal injecté en textContent (évite tout souci d'échappement HTML)
+    if (n.journal && n.journal.length) {
+      const revered = n.journal.slice().reverse();
+      el.querySelectorAll('.n-journal-text').forEach((elText, i) => { elText.textContent = revered[i].texte; });
+    }
+
+    // Ouverture / fermeture (ignore les champs éditables et boutons)
+    el.addEventListener('click', e => {
+      if (e.target.closest('.n-content-outer') || e.target.closest('.n-title-input') ||
+          e.target.closest('.n-chapitre-input') || e.target.closest('.n-status-select') ||
+          e.target.closest('.n-delete-btn')) return;
+      el.classList.toggle('open');
+    });
+
+    // Titre / chapitre : édition directe (readonly toggle)
+    el.querySelectorAll('.n-title-input, .n-chapitre-input').forEach(input => {
+      input.addEventListener('click', e => { e.stopPropagation(); input.removeAttribute('readonly'); });
+      input.addEventListener('blur', () => {
+        input.setAttribute('readonly', true);
+        const field = input.dataset.field;
+        n[field] = input.value.trim();
+        n.lastUpdate = new Date().toISOString();
+        saveToStorage();
+        renderCoursList();
+      });
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+    });
+
+    // Statut
+    const statusSelect = el.querySelector('.n-status-select');
+    statusSelect.addEventListener('click', e => e.stopPropagation());
+    statusSelect.addEventListener('change', () => {
+      n.statut = statusSelect.value;
+      const info = statutInfo(n.statut);
+      statusSelect.className = 'n-status-select ' + info.cls;
+      n.lastUpdate = new Date().toISOString();
+      saveToStorage();
+    });
+
+    // Verrouillage individuel Théorie/Exercices
+    el.querySelectorAll('.n-lock-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const group = btn.closest('.n-form-group');
+        const unlocked = group.classList.toggle('unlocked');
+        btn.textContent = unlocked ? '🔓' : '🔒';
+        group.querySelector('textarea').readOnly = !unlocked;
+      });
+    });
+
+    // Enregistrer Théorie/Exercices
+    el.querySelector('.n-save-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      n.theorie   = el.querySelector('textarea[data-field="theorie"]').value;
+      n.exercices = el.querySelector('textarea[data-field="exercices"]').value;
+      n.lastUpdate = new Date().toISOString();
+      el.querySelectorAll('.n-form-group').forEach(group => {
+        group.classList.remove('unlocked');
+        group.querySelector('textarea').readOnly = true;
+        group.querySelector('.n-lock-btn').textContent = '🔒';
+      });
+      saveToStorage();
+      showToast('✓ Notion enregistrée', 'success');
+      renderCoursDetail(n.formationId, document.getElementById('notionSearch').value.trim());
+    });
+
+    // Journal
+    el.querySelector('.n-journal-add-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      el.querySelector('.n-journal-new-form').classList.toggle('show');
+    });
+    el.querySelector('.jn-cancel').addEventListener('click', e => {
+      e.stopPropagation();
+      el.querySelector('.n-journal-new-form').classList.remove('show');
+      el.querySelector('.n-journal-new-form textarea').value = '';
+    });
+    el.querySelector('.jn-valider').addEventListener('click', e => {
+      e.stopPropagation();
+      const ta = el.querySelector('.n-journal-new-form textarea');
+      const texte = ta.value.trim();
+      if (!texte) return;
+      if (!n.journal) n.journal = [];
+      n.journal.push({ date: new Date().toISOString(), texte });
+      n.lastUpdate = new Date().toISOString();
+      saveToStorage();
+      renderCoursDetail(n.formationId, document.getElementById('notionSearch').value.trim());
+      showToast('✓ Note ajoutée au journal', 'success');
+    });
+
+    // Suppression
+    el.querySelector('.n-delete-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      if (confirm('Supprimer cette notion ?')) {
+        notions = notions.filter(x => x.id !== n.id);
+        saveToStorage();
+        renderCoursDetail(n.formationId, document.getElementById('notionSearch').value.trim());
+        renderCoursList();
+      }
+    });
+
+    return el;
+  }
+
+  function escAttr(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  document.getElementById('addNotionBtn').addEventListener('click', () => {
+    const n = {
+      id: uid('n'),
+      formationId: currentFormationId,
+      chapitre: '',
+      sousChapitre: 'Nouvelle notion',
+      statut: 'a-decouvrir',
+      theorie: '',
+      exercices: '',
+      journal: [],
+      dateCreation: new Date().toISOString(),
+      lastUpdate: new Date().toISOString()
+    };
+    notions.push(n);
+    saveToStorage();
+    renderCoursDetail(currentFormationId, '');
+    renderCoursList();
+    // ouvre + focus le titre pour édition immédiate
+    setTimeout(() => {
+      const el = document.querySelector(`.n-capsule[data-id="${n.id}"]`);
+      if (el) {
+        const titleInput = el.querySelector('.n-title-input');
+        titleInput.removeAttribute('readonly');
+        titleInput.focus();
+        titleInput.select();
+      }
+    }, 50);
+  });
+
+  document.getElementById('notionSearch').addEventListener('input', function() {
+    if (currentFormationId) renderCoursDetail(currentFormationId, this.value.trim());
+  });
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  renderAll();
+  updateHomeStats();
 </script>
 </body>
 </html>
