@@ -407,6 +407,19 @@ header.top .teaser{margin-top:4px}
 .corr-p{border:0;padding:0;background:transparent}
 .rubric em.new{font-style:normal;font:600 .66rem var(--mono);letter-spacing:.08em;text-transform:uppercase;background:var(--brass-soft);color:var(--ink);padding:1px 6px;border-radius:4px}
 .more-list .xcard:has(.corr[open]){grid-column:1/-1}
+.warnbox{border-left:4px solid var(--brass);background:var(--brass-soft);border-radius:6px;padding:8px 12px;font-size:.92rem;margin:0}
+.deg3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.deg{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+.deg-h{font-size:1rem} .deg-h small{color:var(--muted);font-weight:500}
+.deg-h.I{color:var(--blue)} .deg-h.IV{color:var(--ok)} .deg-h.V{color:var(--brass)}
+.deg-how{font-size:.85rem}
+.kbd .ghost{fill:var(--blue);fill-opacity:.3}
+.hs-t{border-collapse:collapse;font-size:.92rem}
+.hs-t th{text-align:left;padding:4px 14px 4px 0;font:500 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hs-t td{padding:4px 0}
+.hs-t tr.tot td,.hs-t tr.tot th{border-top:1px solid var(--line);padding-top:6px}
+.why ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+.why .controls{display:flex;flex-wrap:wrap;gap:8px}
 /* ===== Atelier à trois colonnes ===== */
 .wrap.w3-wrap{max-width:none;padding-top:14px}
 .w3{display:grid;grid-template-columns:136px minmax(0,1fr) minmax(380px,36%);gap:18px;align-items:start}
@@ -577,6 +590,7 @@ header.top .teaser{margin-top:4px}
       </div>
       <div class="why"><b class="t">Pourquoi trois phrases</b><p>C'est la structure question/réponse du blues chanté : on expose une idée, on la redit sur le IV (la même idée, éclairée autrement), puis on conclut, et la mesure 12 relance la grille suivante (le <em>turnaround</em>). Tes futures phrases de main droite suivront ce découpage.</p></div>
       <div data-gridfinder></div>
+      <div data-handsplit></div>
       <div class="culture"><b>D'où ça vient</b><p>Le boogie-woogie naît au début du XX<sup>e</sup> siècle dans les barrelhouses et les camps de travail du Sud des États-Unis, puis monte à Chicago avec la Grande Migration. Dans les années 1920, on y organise des <em>rent parties</em> : une soirée dansante chez soi, entrée payante, pour payer le loyer. Un pianiste tient la salle pendant des heures, grille après grille : la forme doit être automatique.</p></div>
       <div class="quiz" data-quiz="0.1"></div>
       <div class="flips" data-flip="0.1"></div>
@@ -615,6 +629,7 @@ header.top .teaser{margin-top:4px}
         <div class="kbd" id="kb-lead"></div>
         <p class="note">Sans la fondamentale, C7 se joue mi-sol-si♭ et F7 mi♭-la-do. Chaque doigt glisse vers la touche la plus proche. Le seul mouvement d'un demi-ton, mi → mi♭, est la « blue note » de Do : c'est lui qui fait sonner le passage au IV.</p>
       </div>
+      <div data-noroot></div>
       <div data-chordbuilder></div>
       <div class="culture"><b>D'où ça vient</b><p>Les chanteurs de blues glissent entre la tierce mineure et la tierce majeure, et appuient sur la septième mineure. Un piano ne peut pas « glisser » : les pianistes ont donc mis ces notes bleues directement dans les accords. D'où cette harmonie de septièmes partout, que l'oreille classique entend comme instable et que l'oreille blues entend comme chez elle.</p></div>
       <div class="quiz" data-quiz="0.2"></div>
@@ -1539,24 +1554,28 @@ var BW_THEORY=(function(){
 
   // ---------- 0.1 · Trouver la grille dans n'importe quelle tonalité ----------
   function gridFinder(el){
-    var cur="F";
+    var cur="C";
     el.innerHTML='<div class="vis"><span class="vis-h">Trouver la grille dans n\'importe quelle tonalité</span>'+
-      '<p>Compte en <b>demi-tons</b> : toutes les touches, blanches et noires. Depuis la tonique (le I) :</p>'+
+      '<p>La grille utilise trois accords. Chacun part d\'une note différente, sa <b>fondamentale</b>. Pour trouver ces trois points de départ, on compte en <b>demi-tons</b> (toutes les touches, blanches et noires) depuis la tonique, le I :</p>'+
       '<div class="rule3"><div><b>IV</b><span>+5 demi-tons</span></div><div><b>V</b><span>+7 demi-tons</span></div></div>'+
+      '<p class="warnbox"><b>Attention :</b> les trois claviers ci-dessous ne montrent pas les notes d\'un accord. Chacun montre le <b>point de départ</b> d\'un accord de la grille, et ces trois notes ne se jouent jamais ensemble. Comment on construit l\'accord à partir de ce point de départ, c\'est la notion 0.2.</p>'+
       '<p class="note">Compter les noms de notes (Fa, Sol, La, Si) donne le nom, pas la bonne touche. Compter les demi-tons tombe toujours juste : en Fa, +5 tombe sur <b>Si♭</b>.</p>'+
       '<div class="keytabs" role="group" aria-label="Choisir la tonalité"></div>'+
-      '<div class="kbd tkb"></div><p class="tres" aria-live="polite"></p>'+
-      '<div class="controls"><button type="button" class="play gf-play">▶ Écouter I · IV · V · I</button></div>'+
-      '<div class="legend"><span><i style="background:var(--blue)"></i>I (tonique)</span><span><i style="background:var(--ok)"></i>IV (+5)</span><span><i style="background:var(--brass)"></i>V (+7)</span></div></div>';
-    var bar=BW.$(".keytabs",el), kb=BW.$(".tkb",el), res=BW.$(".tres",el);
+      '<div class="deg3"></div><p class="tres" aria-live="polite"></p>'+
+      '<div class="controls"><button type="button" class="play gf-play">▶ Écouter I · IV · V · I</button></div></div>';
+    var bar=BW.$(".keytabs",el), box=BW.$(".deg3",el), res=BW.$(".tres",el);
     function draw(id){
       cur=id; paintBar(bar,id);
-      var I=rootById(id), IV=above(I,3,5), V=above(I,4,7), m=60+pcOf(I.l,I.a), marks={};
-      marks[m]={c:"root",t:"I"}; marks[m+5]={c:"g4",t:"IV"}; marks[m+7]={c:"b7",t:"V"};
-      kb.innerHTML=kbSvg(60,84,marks,"Clavier : I, IV et V en "+frName(I));
+      var I=rootById(id), IV=above(I,3,5), V=above(I,4,7), m=60+pcOf(I.l,I.a);
+      var D=[{d:"I",n:I,s:0,c:"root",mes:"mesures 1 à 4, 7-8 et 11",how:"la tonique"},{d:"IV",n:IV,s:5,c:"g4",mes:"mesures 5-6 et 10",how:frName(I)+" + 5 demi-tons"},{d:"V",n:V,s:7,c:"b7",mes:"mesures 9 et 12",how:frName(I)+" + 7 demi-tons"}];
+      box.innerHTML=D.map(function(x){
+        var marks={}; if(x.s) marks[m]={c:"ghost",t:"I"}; marks[m+x.s]={c:x.c,t:x.d};
+        var lo=m<65?m:m-2, ch=(enName(x.n)+"7").replace("b","♭").replace("#","♯");
+        return '<div class="deg"><b class="deg-h '+x.d+'">'+ch+' <small>('+x.d+')</small></b><span class="note">'+x.mes+'</span>'+
+          '<div class="kbd">'+kbSvg(lo,lo+13,marks,"Point de départ de "+ch)+'</div><span class="deg-how">Part de <b>'+frName(x.n)+'</b> · '+x.how+'</span></div>';
+      }).join("");
       var g=["I","I","I","I","IV","IV","I","I","V","IV","I","V"], nm={I:enName(I)+"7",IV:enName(IV)+"7",V:enName(V)+"7"};
-      res.innerHTML='<b>En '+frName(I)+'</b> : '+frName(I)+' → +5 = <b>'+frName(IV)+'</b> (IV) · '+frName(I)+' → +7 = <b>'+frName(V)+'</b> (V)<br>'+
-        '<span class="gline">'+g.map(function(d,i){ return (i&&i%4===0?'<i>|</i>':'')+'<em class="'+d+'">'+nm[d].replace("b","♭").replace("#","♯")+'</em>'; }).join(" ")+'</span>';
+      res.innerHTML='<b>La grille en '+frName(I)+'</b><br><span class="gline">'+g.map(function(d,i){ return (i&&i%4===0?'<i>|</i>':'')+'<em class="'+d+'">'+nm[d].replace("b","♭").replace("#","♯")+'</em>'; }).join(" ")+'</span>';
     }
     keysBar(bar,draw); draw(cur);
     BW.$(".gf-play",el).addEventListener("click",function(){
@@ -1568,6 +1587,56 @@ var BW_THEORY=(function(){
       });
       BW.quick(out,{q:72});
     });
+  }
+
+
+  // ---------- 0.1 · Comment l'accord est partagé entre les deux mains ----------
+  var SPLIT={C:{lh:[[48,0,0,"do"],[55,4,0,"sol"]],rh:[[64,2,0,"mi"],[67,4,0,"sol"],[70,6,-1,"si♭"]]},
+             F:{lh:[[41,3,0,"fa"],[48,0,0,"do"]],rh:[[63,2,-1,"mi♭"],[69,5,0,"la"],[72,0,0,"do"]]},
+             G:{lh:[[43,4,0,"sol"],[50,1,0,"ré"]],rh:[[65,3,0,"fa"],[71,6,0,"si"],[74,1,0,"ré"]]}};
+  var FULL={C:"do · mi · sol · si♭",F:"fa · la · do · mi♭",G:"sol · si · ré · fa"};
+  function noteAbc(x){ return abcOf({l:x[1],a:x[2],m:x[0]}); }
+  function handSplit(el){
+    var cur="C";
+    el.innerHTML='<div class="vis"><span class="vis-h">Comment se joue la grille dans l\'exercice 0.1</span>'+
+      '<p>Dans l\'exercice, chaque accord est <b>partagé entre les deux mains</b>. La main gauche tient la fondamentale (et sa quinte) dans le grave ; la main droite joue les trois autres notes. Ensemble, les deux mains donnent l\'accord complet.</p>'+
+      '<div class="keytabs" role="group" aria-label="Choisir l\'accord"><button type="button" data-r="C">C7</button><button type="button" data-r="F">F7</button><button type="button" data-r="G">G7</button></div>'+
+      '<div class="kbd tkb hs-kb"></div>'+
+      '<div class="hs-sum"></div>'+
+      '<div class="controls"><button type="button" class="small hs-l">▶ Main gauche</button><button type="button" class="small hs-r">▶ Main droite</button><button type="button" class="play hs-b">▶ Les deux ensemble</button></div>'+
+      '<div class="legend"><span><i style="background:var(--brass)"></i>main gauche</span><span><i style="background:var(--blue)"></i>main droite</span></div>'+
+      '<p class="note">Pourquoi la main droite ne rejoue pas la fondamentale ? C\'est expliqué en 0.2. Pour l\'instant, retiens que rien ne manque : le do de C7 est à la main gauche.</p></div>';
+    var kb=BW.$(".hs-kb",el), sum=BW.$(".hs-sum",el), bar=BW.$(".keytabs",el);
+    function draw(id){
+      cur=id; paintBar(bar,id); var S=SPLIT[id], marks={};
+      S.lh.forEach(function(x){ marks[x[0]]={c:"b7",t:x[3]}; }); S.rh.forEach(function(x){ marks[x[0]]={c:"tone",t:x[3]}; });
+      kb.innerHTML=kbSvg(41,76,marks,"Les deux mains sur "+id+"7");
+      sum.innerHTML='<table class="hs-t"><tr><th>Main gauche</th><td>'+S.lh.map(function(x,i){ return i?x[3]:'<b>'+x[3]+'</b>'; }).join(" + ")+'</td></tr>'+
+        '<tr><th>Main droite</th><td>'+S.rh.map(function(x){ return x[3]; }).join(" + ")+'</td></tr>'+
+        '<tr class="tot"><th>Ensemble</th><td><b>'+FULL[id]+'</b> = '+id+'7 complet</td></tr></table>';
+    }
+    BW.$$("[data-r]",bar).forEach(function(b){ b.addEventListener("click",function(){ draw(b.dataset.r); }); });
+    draw(cur);
+    function play(lh,rh){ var S=SPLIT[cur];
+      BW.quick([{ch:cur+"7",lh:lh?"["+S.lh.map(noteAbc).join("")+"]8":null,rh:rh?"["+S.rh.map(noteAbc).join("")+"]8":null}],{q:70}); }
+    BW.$(".hs-l",el).addEventListener("click",function(){ play(true,false); });
+    BW.$(".hs-r",el).addEventListener("click",function(){ play(false,true); });
+    BW.$(".hs-b",el).addEventListener("click",function(){ play(true,true); });
+  }
+
+  // ---------- 0.2 · Pourquoi la main droite ne joue pas la fondamentale ----------
+  function noRoot(el){
+    el.innerHTML='<div class="why"><b class="t">Pourquoi la main droite ne joue pas la fondamentale</b>'+
+      '<p>Dans la grille de l\'exercice 0.1, ta main droite joue mi-sol-si♭ sur C7, sans le do. L\'accord n\'est pas amputé : <b>le do est à la main gauche</b>. Les deux mains se partagent les quatre notes.</p>'+
+      '<ol><li><b>Le do est déjà là.</b> C\'est la basse qui dit à l\'oreille « on est sur Do ». Le rejouer à la main droite n\'ajoute aucune information.</li>'+
+      '<li><b>Les notes qui comptent sont ailleurs.</b> La 3 (mi) dit « majeur », la ♭7 (si♭) dit « blues ». La main droite garde ces notes de couleur.</li>'+
+      '<li><b>La main bouge à peine.</b> Avec trois notes au lieu de quatre, la main droite passe de C7 (mi-sol-si♭) à F7 (mi♭-la-do) presque sans se déplacer : c\'est le schéma ci-dessus.</li></ol>'+
+      '<p>C\'est ainsi que jouent la plupart des pianistes de blues et de jazz : la basse s\'occupe de la fondamentale, la main droite des couleurs.</p>'+
+      '<div class="controls"><button type="button" class="small nr-a">▶ Avec le do à la main droite</button><button type="button" class="small nr-b">▶ Sans (comme dans l\'exercice)</button></div>'+
+      '<p class="note">Écoute les deux : le son est presque le même, mais la version sans le do est plus claire et bien plus facile à enchaîner.</p></div>';
+    var LH="[C,G,]8";
+    BW.$(".nr-a",el).addEventListener("click",function(){ BW.quick([{ch:"C7",lh:LH,rh:"[CEG_B]8"},{ch:"F7",lh:"[F,,C,]8",rh:"[CF A_e]8".replace(" ","")}],{q:66}); });
+    BW.$(".nr-b",el).addEventListener("click",function(){ BW.quick([{ch:"C7",lh:LH,rh:"[EG_B]8"},{ch:"F7",lh:"[F,,C,]8",rh:"[_EAc]8"}],{q:66}); });
   }
 
   // ---------- 0.2 · Constructeur d'accords ----------
@@ -1664,6 +1733,8 @@ var BW_THEORY=(function(){
 
   return function(root){
     BW.$$("[data-gridfinder]",root).forEach(gridFinder);
+    BW.$$("[data-handsplit]",root).forEach(handSplit);
+    BW.$$("[data-noroot]",root).forEach(noRoot);
     BW.$$("[data-chordbuilder]",root).forEach(builder);
     BW.$$('.ex[data-x="trouve"]',root).forEach(trouve);
   };
@@ -1728,6 +1799,7 @@ var BW_PEDAGO=(function(){
            ["Que joue-t-on à la mesure 12, et pourquoi ?","Le V (G7) : c'est le turnaround, il relance la grille suivante. Sur la toute dernière grille, on reste sur le I."],
            ["Quels sont les accords I, IV et V en Fa ?","F7, B♭7 et C7 : Si♭ est 5 demi-tons au-dessus de Fa (IV), Do 7 demi-tons au-dessus (V)."]],
     "0.2":[["Quelles notes forment C7 ?","Do, mi, sol, si♭ : 1, 3, 5, ♭7."],
+           ["Dans l'exercice 0.1, ta main droite joue mi-sol-si♭ sur C7. Où est passé le do ?","À la main gauche : les deux mains se partagent l'accord. La basse tient la fondamentale, la main droite joue les notes de couleur (3, 5, ♭7)."],
            ["Pourquoi le I est-il aussi un accord de septième en blues ?","Parce qu'en blues la septième n'est pas une tension à résoudre : c'est la couleur de base, sur les trois accords."],
            ["Dans l'enchaînement C7 → F7, quelle note bouge d'un demi-ton ?","Le mi, qui descend sur mi♭ : la ♭7 de F7, et la « blue note » de Do."]],
     "0.3":[["Qu'est-ce que le shuffle ?","Des croches écrites égales mais jouées longue-courte, comme un triolet dont on lie les deux premières notes (2/3 – 1/3)."],
@@ -2075,10 +2147,10 @@ var BW_PEDAGO_EXT=(function(){
 
 /* ===== Objectifs pédagogiques par étape (k : comprendre, f : faire, j : jouer juste) ===== */
 var BW_OBJ={
-  l01:{k:["expliquer comment sont construites les 12 mesures : 3 phrases de 4, sur les degrés I, IV et V ;","reconnaître à l'oreille le passage au IV ;","trouver les accords I, IV et V dans n'importe quelle tonalité (IV = +5 demi-tons, V = +7)."],
+  l01:{k:["expliquer comment sont construites les 12 mesures : 3 phrases de 4, sur les degrés I, IV et V ;","reconnaître à l'oreille le passage au IV ;","trouver les accords I, IV et V dans n'importe quelle tonalité (IV = +5 demi-tons, V = +7) ;","expliquer comment un accord est partagé entre les deux mains : la fondamentale à gauche, les autres notes à droite."],
        f:["jouer la grille en accords avec les deux mains ;","improviser une note par mesure en tombant juste aux changements d'accord."],
        j:["enchaîner 2 grilles sans partition ni arrêt ;","évaluer honnêtement ta prestation avec la grille Acquis / Pas encore."]},
-  l02:{k:["nommer les 4 notes de C7, F7 et G7 (1, 3, 5, ♭7) ;","expliquer pourquoi, en blues, la septième est une couleur et non une tension ;","distinguer à l'oreille un accord avec et sans septième ;","construire un accord de septième sur n'importe quelle note : +4, +7, et la ♭7 un ton sous la fondamentale."],
+  l02:{k:["nommer les 4 notes de C7, F7 et G7 (1, 3, 5, ♭7) ;","expliquer pourquoi, en blues, la septième est une couleur et non une tension ;","distinguer à l'oreille un accord avec et sans septième ;","construire un accord de septième sur n'importe quelle note : +4, +7, et la ♭7 un ton sous la fondamentale ;","expliquer pourquoi la main droite ne rejoue pas la fondamentale."],
        f:["placer C7, F7 et G7 sans chercher ;","trouver seule les 4 notes de n'importe quel accord de septième ;","enchaîner C7 → F7 en ne déplaçant que les doigts nécessaires ;","improviser avec les seules notes de l'accord en cours."],
        j:["enchaîner C7-F7-C7-G7-F7-C7 les yeux fermés, sans lever la main ;","jouer la ♭7 franchement, en l'assumant comme une couleur ;","construire un accord de septième sur n'importe quelle note, sans aide."]},
   l03:{k:["expliquer la différence entre croches droites et shuffle (50/50 contre 2/3 – 1/3) ;","distinguer le feel (quand tombe la note) du groove (avec quelle force) ;","reconnaître à l'oreille une phrase droite ou swinguée."],
