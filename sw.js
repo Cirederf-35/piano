@@ -2,7 +2,7 @@
 // Stratégie network-first : on sert toujours la version en ligne quand elle est
 // disponible (les mises à jour du dashboard arrivent immédiatement), et le cache
 // prend le relais hors connexion.
-const CACHE = 'piano-dashboard-v4';
+const CACHE = 'piano-dashboard-v5';
 const ASSETS = ['.', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'atelier-boogie.html'];
 
 self.addEventListener('install', (e) => {
